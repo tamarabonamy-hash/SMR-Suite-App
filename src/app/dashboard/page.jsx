@@ -1,0 +1,9 @@
+import { createClient } from '../../lib/supabase/server'
+import SMRSuiteClient from './SMRSuiteClient'
+
+export default async function DashboardPage() {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  return <SMRSuiteClient user={user} />
+}
