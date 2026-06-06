@@ -1,14 +1,9 @@
-export const metadata = {
-  title: 'Strategy Made Real — Execution Suite',
-  description: 'Eight tools. One suite. Where strategy becomes owned, measurable, and executed.',
-}
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
 
-export default function RootLayout({ children }) {
-  return (
-    <html lang="en">
-      <body style={{ margin: 0, padding: 0, background: '#F7F4EF' }}>
-        {children}
-      </body>
-    </html>
-  )
+export default async function DashboardLayout({ children }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/')
+  return <>{children}</>
 }
