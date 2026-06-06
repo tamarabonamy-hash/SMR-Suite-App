@@ -154,7 +154,7 @@ export default function LoginPage() {
         </div>
 
         <div style={{ textAlign:'center', padding:'16px 0', ...mono, fontSize:8, color:T4, letterSpacing:'0.08em', textTransform:'uppercase' }}>
-          Strategy Made Real · Eight Tools · One Suite
+          Strategy Made Real · Nine Tools · One Pathway
         </div>
       </div>
     </>
