@@ -2,15 +2,8 @@
 
 import { useState } from "react";
 
-// Word export stubs — reconnect useWordExport when ready
-const exportDiagnostic    = () => {};
-const exportPrioritisation = () => {};
-const exportDecisionStack  = () => {};
-const exportRoleAnalyser   = () => {};
-const exportRhythm         = () => {};
-const exportKPIs           = () => {};
-const exportCapability     = () => {};
-const exportChange         = () => {};
+import { exportDiagnostic, exportPrioritisation, exportDecisionStack, exportRoleAnalyser,
+         exportRhythm, exportKPIs, exportCapability, exportChange, exportAccountability } from '../lib/useWordExport';
 
 // ─── COLOUR TOKENS ────────────────────────────────────────────────────────────
 const G    = "#2C4A3E";  // Forest green
@@ -1902,7 +1895,7 @@ Return ONLY valid JSON in this exact structure:
 
         <div style={{ display: "flex", gap: 10, justifyContent: "space-between" }}>
           <OBtn onClick={() => { setStep("setup"); setAnalysis(null); }}>← Revise</OBtn>
-          <OBtn onClick={() => window.print()}>↓ Print / Save</OBtn>
+          <OBtn onClick={()=>exportAccountability({programName,sponsor,reviewForum,cadence,commitments,escalationPath,nonNegotiables,redLines})}>↓ Download Plan</OBtn>
         </div>
       </div>
     );
