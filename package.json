@@ -13,7 +13,9 @@
     "react": "^19",
     "react-dom": "^19",
     "@supabase/supabase-js": "^2.44.4",
-    "@supabase/ssr": "^0.5.1"
+    "@supabase/ssr": "^0.5.1",
+    "file-saver": "^2.0.5",
+    "docx": "^9.0.0"
   },
   "devDependencies": {
     "eslint": "^9",
