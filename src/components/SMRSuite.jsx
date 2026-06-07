@@ -1368,15 +1368,6 @@ const OUTCOME_LEVELS = [
   { id: "support", label: "Support level",  desc: "Who enables or assists without owning?" },
 ];
 
-// ─── SHARED UI ────────────────────────────────────────────────────────────────
-function SL({children,color=GOLD}){return <div style={{...mono,fontSize:10,color,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:10}}>{children}</div>;}
-function Card({children,style={},gold=false}){return <div style={{background:S2,border:`1px solid ${gold?"rgba(212,168,71,0.3)":BDR}`,padding:24,...style}}>{children}</div>;}
-function GBtn({children,onClick,disabled,style={}}){return <button onClick={onClick} disabled={disabled} style={{background:disabled?"rgba(212,168,71,0.3)":GOLD,color:G,border:"none",padding:"11px 26px",...mono,fontSize:11,letterSpacing:"0.1em",textTransform:"uppercase",cursor:disabled?"not-allowed":"pointer",fontWeight:700,...style}}>{children}</button>;}
-function OBtn({children,onClick,style={}}){return <button onClick={onClick} style={{background:"transparent",color:T2,border:`1.5px solid ${G}`,padding:"9px 20px",...mono,fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer",...style}}>{children}</button>;}
-function InfoBox({children}){return <div style={{background:"rgba(44,74,62,0.05)",border:`1px solid ${BDR}`,padding:"12px 16px",marginBottom:16,fontSize:12,color:T3,lineHeight:1.7,fontStyle:"italic"}}>{children}</div>;}
-function Pill({children,color=GOLD}){return <span style={{...mono,fontSize:9,color,background:color+"18",border:`1px solid ${color}44`,padding:"2px 8px",letterSpacing:"0.08em",textTransform:"uppercase",whiteSpace:"nowrap"}}>{children}</span>;}
-function TabBar({tabs,active,onChange}){return <div style={{display:"flex",borderBottom:`2px solid ${BDR}`,marginBottom:24}}>{tabs.map(({id,label})=><button key={id} onClick={()=>onChange(id)} style={{background:"none",border:"none",borderBottom:active===id?`2px solid ${GOLD}`:"2px solid transparent",padding:"10px 16px",...mono,fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer",color:active===id?GOLD:T4,marginBottom:-2}}>{label}</button>)}</div>;}
-
 // ─── RACI CELL ────────────────────────────────────────────────────────────────
 function RACICell({ value, onChange }) {
   const cfg = RACI_COLORS[value] || RACI_COLORS["—"];
