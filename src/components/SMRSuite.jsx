@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from "react";
-import Tool9OrgClarity from './Tool9OrgClarity';
 
 // Word export stubs — reconnect useWordExport when ready
 const exportDiagnostic    = () => {};
@@ -1337,6 +1336,588 @@ function Tool10ReviewAccountability(){
       <GBtn disabled={!canGenerate} onClick={()=>setStep("plan")}>Generate Review Plan →</GBtn>
     </div>
   </div>;
+}
+
+
+// ─── TOOL 9 — OWNERSHIP DESIGN (RACI) ═══════════════════════════════════════
+const RACI_OPTIONS = ["R","A","C","I","—"];
+
+const RACI_COLORS = {
+  "R": { color: G_MID,  bg: "rgba(74,122,104,0.12)",  label: "Responsible" },
+  "A": { color: GOLD,   bg: "rgba(212,168,71,0.12)",   label: "Accountable" },
+  "C": { color: AMBER,  bg: "rgba(200,154,42,0.12)",   label: "Consulted" },
+  "I": { color: T4,     bg: "rgba(90,122,110,0.08)",   label: "Informed" },
+  "—": { color: T4,     bg: "transparent",             label: "Not involved" },
+};
+
+const OVERLAP_SIGNALS = [
+  { id: "multi_a",     label: "Multiple Accountable (A) on same process",         risk: "High",   desc: "Only one person should be accountable for any outcome. Multiple A's guarantee confusion." },
+  { id: "ar_blur",     label: "Responsible and Accountable always the same person", risk: "Medium", desc: "Suggests over-centralisation. The person doing the work shouldn't always own the outcome too." },
+  { id: "no_a",        label: "No Accountable owner defined",                      risk: "High",   desc: "Someone is doing the work but nobody owns the outcome. Classic ownership gap." },
+  { id: "all_r",       label: "Everyone marked Responsible",                       risk: "Medium", desc: "Shared responsibility usually means no real responsibility." },
+  { id: "role_people", label: "Roles defined around people, not outcomes",         risk: "High",   desc: "When roles were built to fit individuals rather than functions, gaps and overlaps are structural." },
+  { id: "process_gap", label: "Processes evolved but roles didn't keep up",        risk: "Medium", desc: "Common after growth, mergers, or transformation. The map no longer matches the territory." },
+  { id: "func_blur",   label: "Unclear boundaries between functions",              risk: "High",   desc: "e.g. HR vs managers on performance, Product vs Engineering on decisions." },
+  { id: "decision_lag",label: "Decisions being made by wrong person in practice",  risk: "Medium", desc: "Who actually decided vs who was supposed to? If different, your RACI is decorative." },
+];
+
+const OUTCOME_LEVELS = [
+  { id: "outcome", label: "Outcome level",  desc: "Who owns the result, regardless of how it's achieved?" },
+  { id: "task",    label: "Task level",     desc: "Who does the specific activity?" },
+  { id: "decision",label: "Decision level", desc: "Who has final authority to decide?" },
+  { id: "support", label: "Support level",  desc: "Who enables or assists without owning?" },
+];
+
+// ─── SHARED UI ────────────────────────────────────────────────────────────────
+function SL({children,color=GOLD}){return <div style={{...mono,fontSize:10,color,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:10}}>{children}</div>;}
+function Card({children,style={},gold=false}){return <div style={{background:S2,border:`1px solid ${gold?"rgba(212,168,71,0.3)":BDR}`,padding:24,...style}}>{children}</div>;}
+function GBtn({children,onClick,disabled,style={}}){return <button onClick={onClick} disabled={disabled} style={{background:disabled?"rgba(212,168,71,0.3)":GOLD,color:G,border:"none",padding:"11px 26px",...mono,fontSize:11,letterSpacing:"0.1em",textTransform:"uppercase",cursor:disabled?"not-allowed":"pointer",fontWeight:700,...style}}>{children}</button>;}
+function OBtn({children,onClick,style={}}){return <button onClick={onClick} style={{background:"transparent",color:T2,border:`1.5px solid ${G}`,padding:"9px 20px",...mono,fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer",...style}}>{children}</button>;}
+function InfoBox({children}){return <div style={{background:"rgba(44,74,62,0.05)",border:`1px solid ${BDR}`,padding:"12px 16px",marginBottom:16,fontSize:12,color:T3,lineHeight:1.7,fontStyle:"italic"}}>{children}</div>;}
+function Pill({children,color=GOLD}){return <span style={{...mono,fontSize:9,color,background:color+"18",border:`1px solid ${color}44`,padding:"2px 8px",letterSpacing:"0.08em",textTransform:"uppercase",whiteSpace:"nowrap"}}>{children}</span>;}
+function TabBar({tabs,active,onChange}){return <div style={{display:"flex",borderBottom:`2px solid ${BDR}`,marginBottom:24}}>{tabs.map(({id,label})=><button key={id} onClick={()=>onChange(id)} style={{background:"none",border:"none",borderBottom:active===id?`2px solid ${GOLD}`:"2px solid transparent",padding:"10px 16px",...mono,fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer",color:active===id?GOLD:T4,marginBottom:-2}}>{label}</button>)}</div>;}
+
+// ─── RACI CELL ────────────────────────────────────────────────────────────────
+function RACICell({ value, onChange }) {
+  const cfg = RACI_COLORS[value] || RACI_COLORS["—"];
+  return (
+    <select
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      style={{
+        background: cfg.bg,
+        color: cfg.color,
+        border: `1.5px solid ${cfg.color === T4 ? BDR : cfg.color+"44"}`,
+        fontFamily: "'DM Mono',monospace",
+        fontSize: 12,
+        fontWeight: 700,
+        padding: "6px 4px",
+        textAlign: "center",
+        cursor: "pointer",
+        width: "100%",
+        borderRadius: 0,
+      }}
+    >
+      {RACI_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+    </select>
+  );
+}
+
+// ─── MAIN TOOL ────────────────────────────────────────────────────────────────
+function Tool9OrgClarity() {
+  const [step, setStep]         = useState("setup");
+  const [orgName, setOrgName]   = useState("");
+  const [tab, setTab]           = useState("raci");
+
+  // Roles
+  const [roles, setRoles] = useState([
+    { id: 1, title: "", function: "" },
+    { id: 2, title: "", function: "" },
+    { id: 3, title: "", function: "" },
+  ]);
+
+  // Processes
+  const [processes, setProcesses] = useState([
+    { id: 1, name: "", level: "outcome" },
+    { id: 2, name: "", level: "outcome" },
+    { id: 3, name: "", level: "outcome" },
+  ]);
+
+  // RACI matrix: { processId_roleId: "R"|"A"|"C"|"I"|"—" }
+  const [matrix, setMatrix] = useState({});
+
+  // Overlap signals
+  const [signals, setSignals] = useState([]);
+
+  // Decision tracking
+  const [decisions, setDecisions] = useState([
+    { id: 1, decision: "", supposed: "", actual: "", aligned: null },
+    { id: 2, decision: "", supposed: "", actual: "", aligned: null },
+  ]);
+
+  // AI analysis
+  const [loading, setLoading]   = useState(false);
+  const [analysis, setAnalysis] = useState(null);
+  const [error, setError]       = useState("");
+
+  // ── Helpers ──────────────────────────────────────────────────────────────
+  function setCell(pid, rid, val) {
+    setMatrix(m => ({ ...m, [`${pid}_${rid}`]: val }));
+  }
+  function getCell(pid, rid) { return matrix[`${pid}_${rid}`] || "—"; }
+
+  function addRole() {
+    setRoles(r => [...r, { id: Date.now(), title: "", function: "" }]);
+  }
+  function updateRole(id, field, val) {
+    setRoles(r => r.map(x => x.id === id ? { ...x, [field]: val } : x));
+  }
+  function removeRole(id) { setRoles(r => r.filter(x => x.id !== id)); }
+
+  function addProcess() {
+    setProcesses(p => [...p, { id: Date.now(), name: "", level: "outcome" }]);
+  }
+  function updateProcess(id, field, val) {
+    setProcesses(p => p.map(x => x.id === id ? { ...x, [field]: val } : x));
+  }
+  function removeProcess(id) { setProcesses(p => p.filter(x => x.id !== id)); }
+
+  function addDecision() {
+    setDecisions(d => [...d, { id: Date.now(), decision: "", supposed: "", actual: "", aligned: null }]);
+  }
+  function updateDecision(id, field, val) {
+    setDecisions(d => d.map(x => x.id === id ? { ...x, [field]: val } : x));
+  }
+
+  // ── Overlap detection ─────────────────────────────────────────────────────
+  function detectOverlaps() {
+    const found = [];
+    processes.filter(p => p.name).forEach(proc => {
+      const aOwners = roles.filter(r => getCell(proc.id, r.id) === "A");
+      if (aOwners.length > 1) found.push({ signal: "multi_a", process: proc.name, roles: aOwners.map(r => r.title).join(", ") });
+      if (aOwners.length === 0 && roles.some(r => getCell(proc.id, r.id) !== "—")) {
+        found.push({ signal: "no_a", process: proc.name, roles: "—" });
+      }
+      const allR = roles.every(r => getCell(proc.id, r.id) === "R");
+      if (allR) found.push({ signal: "all_r", process: proc.name, roles: "All roles" });
+    });
+    return found;
+  }
+
+  // ── AI Analysis ───────────────────────────────────────────────────────────
+  async function runAnalysis() {
+    setLoading(true); setError(""); setAnalysis(null);
+
+    const matrixSummary = processes.filter(p => p.name).map(proc => {
+      const row = roles.filter(r => r.title).map(r => `${r.title}: ${getCell(proc.id, r.id)}`).join(", ");
+      return `${proc.name} (${proc.level}): ${row}`;
+    }).join("\n");
+
+    const decisionSummary = decisions.filter(d => d.decision).map(d =>
+      `Decision: "${d.decision}" — Supposed: ${d.supposed} — Actual: ${d.actual} — Aligned: ${d.aligned === true ? "Yes" : d.aligned === false ? "No" : "Unknown"}`
+    ).join("\n");
+
+    const signalSummary = signals.map(s => OVERLAP_SIGNALS.find(x => x.id === s)?.label).filter(Boolean).join(", ");
+    const detectedOverlaps = detectOverlaps();
+
+    const prompt = `You are an expert organisational design consultant specialising in role clarity and accountability. Analyse this org structure and provide a structured assessment. Write in Australian English. Be direct and specific — no generic advice.
+
+Organisation: ${orgName || "Not specified"}
+
+Roles mapped:
+${roles.filter(r => r.title).map(r => `- ${r.title} (${r.function || "function not specified"})`).join("\n")}
+
+RACI Matrix:
+${matrixSummary || "Not completed"}
+
+Decision tracking:
+${decisionSummary || "Not completed"}
+
+Overlap signals identified by user:
+${signalSummary || "None selected"}
+
+Auto-detected RACI issues:
+${detectedOverlaps.length > 0 ? detectedOverlaps.map(o => `- ${o.signal}: ${o.process} (${o.roles})`).join("\n") : "None detected"}
+
+Return ONLY valid JSON in this exact structure:
+{
+  "overallRisk": "Low|Medium|High|Critical",
+  "headline": "One sentence summary of the main structural issue",
+  "clarityScore": 1-10,
+  "keyOverlaps": [
+    { "area": "string", "roles": "string", "issue": "string", "impact": "string" }
+  ],
+  "ownershipGaps": [
+    { "outcome": "string", "currentState": "string", "recommendation": "string" }
+  ],
+  "decisionInsights": [
+    { "finding": "string", "implication": "string" }
+  ],
+  "priorityActions": [
+    { "action": "string", "timeframe": "Immediate|30 days|90 days", "effort": "Low|Medium|High", "impact": "Low|Medium|High" }
+  ],
+  "redesignPrinciples": [
+    { "principle": "string", "application": "string" }
+  ],
+  "raciRecommendations": [
+    { "process": "string", "currentIssue": "string", "suggestedOwner": "string", "rationale": "string" }
+  ]
+}`;
+
+    try {
+      const res = await fetch("/api/analyse", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-5",
+          max_tokens: 3000,
+          system: "You are an expert organisational design consultant. Respond only with valid JSON. No preamble, no markdown, no explanation. Start with { and end with }.",
+          messages: [{ role: "user", content: prompt }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content?.[0]?.text || "";
+      const start = text.indexOf("{"); const end = text.lastIndexOf("}");
+      if (start === -1 || end === -1) throw new Error("No JSON in response");
+      setAnalysis(JSON.parse(text.slice(start, end + 1)));
+      setStep("results");
+    } catch (e) {
+      setError("Analysis failed: " + e.message);
+    }
+    setLoading(false);
+  }
+
+  const detectedOverlaps = detectOverlaps();
+  const canAnalyse = roles.filter(r => r.title).length >= 2 && processes.filter(p => p.name).length >= 2;
+
+  // ── SETUP STEP ────────────────────────────────────────────────────────────
+  if (step === "setup") return (
+    <div>
+      <InfoBox>Map your org structure, identify where responsibility overlaps, and get a structured redesign plan. You need at least 2 roles and 2 processes to run the analysis.</InfoBox>
+
+      <div style={{ marginBottom: 20 }}>
+        <label style={{ ...mono, fontSize: 9, color: T4, letterSpacing: "0.08em", textTransform: "uppercase", display: "block", marginBottom: 6 }}>Organisation / Team Name</label>
+        <input value={orgName} onChange={e => setOrgName(e.target.value)} placeholder="e.g. Leadership Team · Strategic Review" style={{ background: S2, border: `1px solid ${BDR}`, color: T1, fontFamily: "'DM Sans',sans-serif", fontSize: 13, padding: "9px 12px", outline: "none", width: "100%", borderRadius: 0 }}/>
+      </div>
+
+      <TabBar tabs={[{ id: "raci", label: "Roles & RACI" }, { id: "signals", label: "Overlap Signals" }, { id: "decisions", label: "Decision Tracking" }]} active={tab} onChange={setTab}/>
+
+      {/* ── RACI TAB ── */}
+      {tab === "raci" && <div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 24 }}>
+
+          {/* Roles */}
+          <div>
+            <SL>Roles to Map</SL>
+            {roles.map((role, i) => (
+              <div key={role.id} style={{ background: S2, border: `1px solid ${BDR}`, padding: 12, marginBottom: 6 }}>
+                <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+                  <span style={{ ...mono, fontSize: 9, color: GOLD, marginTop: 10 }}>{String(i + 1).padStart(2, "0")}</span>
+                  <input value={role.title} onChange={e => updateRole(role.id, "title", e.target.value)} placeholder="Role title e.g. Head of Sales" style={{ background: S3, border: `1px solid ${BDR}`, color: T1, fontFamily: "'DM Sans',sans-serif", fontSize: 12, padding: "8px 10px", outline: "none", flex: 1, borderRadius: 0 }}/>
+                  {roles.length > 2 && <button onClick={() => removeRole(role.id)} style={{ background: "none", border: "none", color: RED, cursor: "pointer", fontSize: 16, flexShrink: 0 }}>×</button>}
+                </div>
+                <input value={role.function} onChange={e => updateRole(role.id, "function", e.target.value)} placeholder="Function e.g. Commercial" style={{ background: S3, border: `1px solid ${BDR}`, color: T1, fontFamily: "'DM Sans',sans-serif", fontSize: 11, padding: "6px 10px", outline: "none", width: "100%", borderRadius: 0 }}/>
+              </div>
+            ))}
+            <OBtn onClick={addRole} style={{ width: "100%", marginTop: 4 }}>+ Add Role</OBtn>
+          </div>
+
+          {/* Processes */}
+          <div>
+            <SL>Processes / Outcomes to Map</SL>
+            {processes.map((proc, i) => (
+              <div key={proc.id} style={{ background: S2, border: `1px solid ${BDR}`, padding: 12, marginBottom: 6 }}>
+                <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
+                  <span style={{ ...mono, fontSize: 9, color: GOLD, marginTop: 10 }}>{String(i + 1).padStart(2, "0")}</span>
+                  <input value={proc.name} onChange={e => updateProcess(proc.id, "name", e.target.value)} placeholder="e.g. Performance management" style={{ background: S3, border: `1px solid ${BDR}`, color: T1, fontFamily: "'DM Sans',sans-serif", fontSize: 12, padding: "8px 10px", outline: "none", flex: 1, borderRadius: 0 }}/>
+                  {processes.length > 2 && <button onClick={() => removeProcess(proc.id)} style={{ background: "none", border: "none", color: RED, cursor: "pointer", fontSize: 16, flexShrink: 0 }}>×</button>}
+                </div>
+                <select value={proc.level} onChange={e => updateProcess(proc.id, "level", e.target.value)} style={{ background: S3, border: `1px solid ${BDR}`, color: T3, fontFamily: "'DM Mono',monospace", fontSize: 10, padding: "6px 10px", width: "100%", borderRadius: 0, cursor: "pointer" }}>
+                  {OUTCOME_LEVELS.map(l => <option key={l.id} value={l.id}>{l.label} — {l.desc}</option>)}
+                </select>
+              </div>
+            ))}
+            <OBtn onClick={addProcess} style={{ width: "100%", marginTop: 4 }}>+ Add Process</OBtn>
+          </div>
+        </div>
+
+        {/* RACI Matrix */}
+        {roles.filter(r => r.title).length >= 1 && processes.filter(p => p.name).length >= 1 && (
+          <div>
+            <SL>RACI Matrix</SL>
+            <div style={{ background: "rgba(212,168,71,0.06)", border: `1px solid rgba(212,168,71,0.2)`, padding: "10px 14px", marginBottom: 12, display: "flex", gap: 16, flexWrap: "wrap" }}>
+              {Object.entries(RACI_COLORS).filter(([k]) => k !== "—").map(([k, v]) => (
+                <span key={k} style={{ ...mono, fontSize: 10, color: v.color }}><strong>{k}</strong> — {v.label}</span>
+              ))}
+            </div>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                <thead>
+                  <tr>
+                    <th style={{ ...mono, fontSize: 9, color: T4, letterSpacing: "0.08em", textTransform: "uppercase", padding: "8px 12px", textAlign: "left", background: S3, borderBottom: `2px solid ${GOLD}`, minWidth: 200 }}>Process / Outcome</th>
+                    <th style={{ ...mono, fontSize: 9, color: T4, letterSpacing: "0.08em", textTransform: "uppercase", padding: "8px 12px", textAlign: "center", background: S3, borderBottom: `2px solid ${GOLD}`, minWidth: 60 }}>Level</th>
+                    {roles.filter(r => r.title).map(r => (
+                      <th key={r.id} style={{ ...mono, fontSize: 9, color: T4, letterSpacing: "0.06em", textTransform: "uppercase", padding: "8px 8px", textAlign: "center", background: S3, borderBottom: `2px solid ${GOLD}`, minWidth: 90 }}>{r.title}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {processes.filter(p => p.name).map((proc, ri) => {
+                    const aCount = roles.filter(r => r.title && getCell(proc.id, r.id) === "A").length;
+                    const hasWarning = aCount > 1 || aCount === 0;
+                    return (
+                      <tr key={proc.id} style={{ background: hasWarning ? "rgba(185,64,64,0.04)" : ri % 2 === 0 ? S2 : S1 }}>
+                        <td style={{ padding: "8px 12px", color: T2, fontWeight: 600, borderBottom: `1px solid ${BDR}`, verticalAlign: "middle" }}>
+                          {proc.name}
+                          {aCount > 1 && <span style={{ ...mono, fontSize: 8, color: RED, marginLeft: 8 }}>⚠ {aCount} accountable</span>}
+                          {aCount === 0 && <span style={{ ...mono, fontSize: 8, color: AMBER, marginLeft: 8 }}>⚠ no owner</span>}
+                        </td>
+                        <td style={{ padding: "8px 8px", textAlign: "center", borderBottom: `1px solid ${BDR}` }}>
+                          <span style={{ ...mono, fontSize: 8, color: T4 }}>{proc.level}</span>
+                        </td>
+                        {roles.filter(r => r.title).map(r => (
+                          <td key={r.id} style={{ padding: "4px 4px", borderBottom: `1px solid ${BDR}`, verticalAlign: "middle" }}>
+                            <RACICell value={getCell(proc.id, r.id)} onChange={val => setCell(proc.id, r.id, val)}/>
+                          </td>
+                        ))}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {detectedOverlaps.length > 0 && (
+              <div style={{ marginTop: 12, background: "rgba(185,64,64,0.06)", border: "1px solid rgba(185,64,64,0.2)", padding: "12px 16px" }}>
+                <div style={{ ...mono, fontSize: 9, color: RED, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>⚠ Overlaps Detected in Matrix</div>
+                {detectedOverlaps.map((o, i) => (
+                  <div key={i} style={{ fontSize: 12, color: T3, marginBottom: 4 }}>
+                    <strong style={{ color: RED }}>{OVERLAP_SIGNALS.find(s => s.id === o.signal)?.label}</strong> — {o.process} ({o.roles})
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>}
+
+      {/* ── SIGNALS TAB ── */}
+      {tab === "signals" && <div>
+        <SL>Which overlap signals are present in this organisation?</SL>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6 }}>
+          {OVERLAP_SIGNALS.map(s => {
+            const sel = signals.includes(s.id);
+            const riskColor = s.risk === "High" ? RED : AMBER;
+            return (
+              <div key={s.id} onClick={() => setSignals(p => sel ? p.filter(x => x !== s.id) : [...p, s.id])}
+                style={{ background: sel ? G + "10" : S2, border: `1.5px solid ${sel ? G : BDR}`, padding: "14px 16px", cursor: "pointer", transition: "all 0.15s" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <span style={{ width: 14, height: 14, border: `1.5px solid ${sel ? GOLD : BDR}`, borderRadius: 2, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, background: sel ? GOLD : "transparent" }}>
+                      {sel && <span style={{ color: G, fontSize: 9, fontWeight: 700 }}>✓</span>}
+                    </span>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: T1, lineHeight: 1.4 }}>{s.label}</span>
+                  </div>
+                  <span style={{ flexShrink: 0, marginLeft: 8 }}><Pill color={riskColor}>{s.risk} risk</Pill></span>
+                </div>
+                <div style={{ fontSize: 11, color: T4, lineHeight: 1.5, marginLeft: 22 }}>{s.desc}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>}
+
+      {/* ── DECISIONS TAB ── */}
+      {tab === "decisions" && <div>
+        <InfoBox>Take 5–10 recent decisions and check: who actually made them vs who was supposed to? Gaps here reveal where your RACI is decorative rather than functional.</InfoBox>
+        {decisions.map((d, i) => (
+          <div key={d.id} style={{ background: S2, border: `1px solid ${BDR}`, padding: 16, marginBottom: 8 }}>
+            <div style={{ ...mono, fontSize: 9, color: GOLD, marginBottom: 8 }}>{String(i + 1).padStart(2, "0")}</div>
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
+              <div>
+                <label style={{ ...mono, fontSize: 9, color: T4, letterSpacing: "0.08em", textTransform: "uppercase", display: "block", marginBottom: 4 }}>Decision Made</label>
+                <input value={d.decision} onChange={e => updateDecision(d.id, "decision", e.target.value)} placeholder="e.g. Approve new hire for Sales team" style={{ background: S3, border: `1px solid ${BDR}`, color: T1, fontFamily: "'DM Sans',sans-serif", fontSize: 12, padding: "8px 10px", outline: "none", width: "100%", borderRadius: 0 }}/>
+              </div>
+              <div>
+                <label style={{ ...mono, fontSize: 9, color: T4, letterSpacing: "0.08em", textTransform: "uppercase", display: "block", marginBottom: 4 }}>Supposed to Decide</label>
+                <input value={d.supposed} onChange={e => updateDecision(d.id, "supposed", e.target.value)} placeholder="e.g. Head of Sales" style={{ background: S3, border: `1px solid ${BDR}`, color: T1, fontFamily: "'DM Sans',sans-serif", fontSize: 12, padding: "8px 10px", outline: "none", width: "100%", borderRadius: 0 }}/>
+              </div>
+              <div>
+                <label style={{ ...mono, fontSize: 9, color: T4, letterSpacing: "0.08em", textTransform: "uppercase", display: "block", marginBottom: 4 }}>Actually Decided By</label>
+                <input value={d.actual} onChange={e => updateDecision(d.id, "actual", e.target.value)} placeholder="e.g. CEO" style={{ background: S3, border: `1px solid ${BDR}`, color: T1, fontFamily: "'DM Sans',sans-serif", fontSize: 12, padding: "8px 10px", outline: "none", width: "100%", borderRadius: 0 }}/>
+              </div>
+            </div>
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              <span style={{ ...mono, fontSize: 9, color: T4, textTransform: "uppercase", letterSpacing: "0.08em" }}>Aligned?</span>
+              {[{ val: true, label: "Yes", color: G_MID }, { val: false, label: "No", color: RED }, { val: null, label: "Unsure", color: T4 }].map(opt => (
+                <button key={String(opt.val)} onClick={() => updateDecision(d.id, "aligned", opt.val)}
+                  style={{ ...mono, fontSize: 9, padding: "4px 10px", border: `1.5px solid ${d.aligned === opt.val ? opt.color : BDR}`, background: d.aligned === opt.val ? opt.color + "18" : "transparent", color: d.aligned === opt.val ? opt.color : T4, cursor: "pointer", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                  {opt.label}
+                </button>
+              ))}
+              {decisions.length > 2 && (
+                <button onClick={() => setDecisions(p => p.filter(x => x.id !== d.id))} style={{ marginLeft: "auto", background: "none", border: "none", color: RED, cursor: "pointer", fontSize: 16 }}>×</button>
+              )}
+            </div>
+          </div>
+        ))}
+        <OBtn onClick={addDecision} style={{ marginTop: 4 }}>+ Add Decision</OBtn>
+      </div>}
+
+      {/* ── CTA ── */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 24, paddingTop: 16, borderTop: `1px solid ${BDR}` }}>
+        <div style={{ fontSize: 12, color: T4 }}>
+          {roles.filter(r => r.title).length} role{roles.filter(r => r.title).length !== 1 ? "s" : ""} · {processes.filter(p => p.name).length} process{processes.filter(p => p.name).length !== 1 ? "es" : ""} · {signals.length} signal{signals.length !== 1 ? "s" : ""}
+          {detectedOverlaps.length > 0 && <span style={{ color: RED, marginLeft: 8 }}>· ⚠ {detectedOverlaps.length} overlap{detectedOverlaps.length !== 1 ? "s" : ""} detected</span>}
+        </div>
+        <GBtn disabled={!canAnalyse || loading} onClick={runAnalysis}>
+          {loading ? "Analysing..." : "Generate Org Clarity Report →"}
+        </GBtn>
+      </div>
+
+      {loading && (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: 48 }}>
+          <div style={{ width: 32, height: 32, border: `3px solid ${GOLD}`, borderTop: "3px solid transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", marginBottom: 16 }}/>
+          <div style={{ ...serif, fontSize: 16, color: T3 }}>Analysing your org structure...</div>
+          <div style={{ fontSize: 12, color: T4, marginTop: 4 }}>Identifying overlaps and ownership gaps</div>
+        </div>
+      )}
+
+      {error && <div style={{ background: "rgba(185,64,64,0.08)", border: "1px solid rgba(185,64,64,0.25)", padding: "10px 14px", marginTop: 12, fontSize: 12, color: RED }}>{error}</div>}
+    </div>
+  );
+
+  // ── RESULTS STEP ──────────────────────────────────────────────────────────
+  if (step === "results" && analysis) {
+    const riskColor = analysis.overallRisk === "Critical" ? RED : analysis.overallRisk === "High" ? "#C0622A" : analysis.overallRisk === "Medium" ? AMBER : G_MID;
+    const scoreColor = analysis.clarityScore <= 4 ? RED : analysis.clarityScore <= 6 ? AMBER : G_MID;
+    const tfColor = t => t === "Immediate" ? RED : t === "30 days" ? AMBER : G_MID;
+    const impColor = i => i === "High" ? G_MID : i === "Medium" ? AMBER : T4;
+
+    return (
+      <div style={{ animation: "fadeIn 0.3s ease" }}>
+
+        {/* Summary bar */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 16 }}>
+          <Card gold style={{ padding: 20, textAlign: "center" }}>
+            <div style={{ ...mono, fontSize: 9, color: T4, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Clarity Score</div>
+            <div style={{ ...serif, fontSize: 48, fontWeight: 700, color: scoreColor, lineHeight: 1 }}>{analysis.clarityScore}</div>
+            <div style={{ ...mono, fontSize: 9, color: T4, marginTop: 4 }}>/ 10</div>
+          </Card>
+          <Card style={{ padding: 20, textAlign: "center" }}>
+            <div style={{ ...mono, fontSize: 9, color: T4, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Structural Risk</div>
+            <div style={{ ...serif, fontSize: 28, fontWeight: 700, color: riskColor, lineHeight: 1.2 }}>{analysis.overallRisk}</div>
+          </Card>
+          <Card style={{ padding: 20, textAlign: "center" }}>
+            <div style={{ ...mono, fontSize: 9, color: T4, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Overlaps Found</div>
+            <div style={{ ...serif, fontSize: 48, fontWeight: 700, color: RED, lineHeight: 1 }}>{(analysis.keyOverlaps || []).length}</div>
+          </Card>
+        </div>
+
+        {/* Headline */}
+        <div style={{ background: G, padding: "18px 24px", marginBottom: 16 }}>
+          <div style={{ ...mono, fontSize: 9, color: GOLD, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 6 }}>Key Finding</div>
+          <div style={{ ...serif, fontSize: 18, fontWeight: 700, color: CREAM, lineHeight: 1.4 }}>{analysis.headline}</div>
+        </div>
+
+        {/* Key overlaps */}
+        {(analysis.keyOverlaps || []).length > 0 && (
+          <Card style={{ padding: 24, marginBottom: 12, border: "1px solid rgba(185,64,64,0.2)", background: "rgba(185,64,64,0.02)" }}>
+            <SL color={RED}>⚠ Responsibility Overlaps</SL>
+            {analysis.keyOverlaps.map((o, i) => (
+              <div key={i} style={{ borderLeft: `3px solid ${RED}`, paddingLeft: 14, marginBottom: 16 }}>
+                <div style={{ display: "flex", gap: 8, alignItems: "baseline", marginBottom: 4 }}>
+                  <div style={{ ...serif, fontSize: 14, fontWeight: 700, color: T1 }}>{o.area}</div>
+                  <div style={{ ...mono, fontSize: 9, color: T4 }}>{o.roles}</div>
+                </div>
+                <div style={{ fontSize: 12, color: T3, marginBottom: 4 }}><strong style={{ color: T2 }}>Issue:</strong> {o.issue}</div>
+                <div style={{ fontSize: 12, color: RED }}><strong>Impact:</strong> {o.impact}</div>
+              </div>
+            ))}
+          </Card>
+        )}
+
+        {/* Ownership gaps */}
+        {(analysis.ownershipGaps || []).length > 0 && (
+          <Card style={{ padding: 24, marginBottom: 12 }}>
+            <SL color={AMBER}>Ownership Gaps</SL>
+            {analysis.ownershipGaps.map((g, i) => (
+              <div key={i} style={{ borderLeft: `3px solid ${AMBER}`, paddingLeft: 14, marginBottom: 14 }}>
+                <div style={{ ...serif, fontSize: 13, fontWeight: 700, color: T1, marginBottom: 4 }}>{g.outcome}</div>
+                <div style={{ fontSize: 12, color: T3, marginBottom: 4 }}>{g.currentState}</div>
+                <div style={{ fontSize: 12, color: G_MID }}><strong>→</strong> {g.recommendation}</div>
+              </div>
+            ))}
+          </Card>
+        )}
+
+        {/* RACI recommendations */}
+        {(analysis.raciRecommendations || []).length > 0 && (
+          <Card style={{ padding: 24, marginBottom: 12 }}>
+            <SL>RACI Recommendations</SL>
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                <thead>
+                  <tr>
+                    {["Process", "Current Issue", "Suggested Owner", "Rationale"].map((h, i) => (
+                      <th key={i} style={{ ...mono, fontSize: 9, color: T4, letterSpacing: "0.08em", textTransform: "uppercase", padding: "8px 12px", textAlign: "left", background: S3, borderBottom: `2px solid ${GOLD}` }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {analysis.raciRecommendations.map((r, i) => (
+                    <tr key={i} style={{ background: i % 2 === 0 ? S2 : S1 }}>
+                      <td style={{ padding: "9px 12px", color: T2, fontWeight: 600, borderBottom: `1px solid ${BDR}` }}>{r.process}</td>
+                      <td style={{ padding: "9px 12px", color: RED, borderBottom: `1px solid ${BDR}` }}>{r.currentIssue}</td>
+                      <td style={{ padding: "9px 12px", color: G_MID, fontWeight: 600, borderBottom: `1px solid ${BDR}` }}>{r.suggestedOwner}</td>
+                      <td style={{ padding: "9px 12px", color: T3, borderBottom: `1px solid ${BDR}` }}>{r.rationale}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        )}
+
+        {/* Decision insights */}
+        {(analysis.decisionInsights || []).length > 0 && (
+          <Card style={{ padding: 24, marginBottom: 12 }}>
+            <SL>Decision Tracking Insights</SL>
+            {analysis.decisionInsights.map((d, i) => (
+              <div key={i} style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+                <span style={{ color: GOLD, fontSize: 14, flexShrink: 0, marginTop: 1 }}>—</span>
+                <div>
+                  <div style={{ fontSize: 13, color: T2, fontWeight: 600, marginBottom: 2 }}>{d.finding}</div>
+                  <div style={{ fontSize: 12, color: T3 }}>{d.implication}</div>
+                </div>
+              </div>
+            ))}
+          </Card>
+        )}
+
+        {/* Priority actions */}
+        {(analysis.priorityActions || []).length > 0 && (
+          <Card style={{ padding: 24, marginBottom: 12 }}>
+            <SL>Priority Actions</SL>
+            {analysis.priorityActions.map((a, i) => (
+              <div key={i} style={{ background: S1, border: `1px solid ${BDR}`, padding: "12px 16px", marginBottom: 6, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, color: T2, fontWeight: 600, marginBottom: 4 }}>{a.action}</div>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <Pill color={tfColor(a.timeframe)}>{a.timeframe}</Pill>
+                    <Pill color={T4}>Effort: {a.effort}</Pill>
+                    <Pill color={impColor(a.impact)}>Impact: {a.impact}</Pill>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </Card>
+        )}
+
+        {/* Redesign principles */}
+        {(analysis.redesignPrinciples || []).length > 0 && (
+          <Card style={{ padding: 24, marginBottom: 16 }}>
+            <SL>Redesign Principles for This Org</SL>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              {analysis.redesignPrinciples.map((p, i) => (
+                <div key={i} style={{ background: G + "08", border: `1px solid ${BDR}`, borderTop: `3px solid ${GOLD}`, padding: 14 }}>
+                  <div style={{ ...serif, fontSize: 13, fontWeight: 700, color: T1, marginBottom: 4 }}>{p.principle}</div>
+                  <div style={{ fontSize: 12, color: T3, lineHeight: 1.5 }}>{p.application}</div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
+        <div style={{ display: "flex", gap: 10, justifyContent: "space-between" }}>
+          <OBtn onClick={() => { setStep("setup"); setAnalysis(null); }}>← Revise</OBtn>
+          <OBtn onClick={() => window.print()}>↓ Print / Save</OBtn>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 const TOOLS=[
