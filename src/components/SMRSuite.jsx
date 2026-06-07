@@ -573,7 +573,7 @@ function Tool4RoleAnalyser({committedInitiatives}){
   return <div style={{display:"grid",gridTemplateColumns:"300px 1fr",gap:0,minHeight:600}}>
     <div style={{borderRight:`1px solid ${BDR}`,padding:"20px 18px",background:S2}}>
       <SL>Role Details</SL>
-      {[["role","Role Title *","e.g. Chief Operations Officer"],["org","Organisation *","e.g. Acme Corp"],["func","Function","e.g. Senior Leadership Team"],["reportsTo","Reports To","e.g. CEO"],["level","Level","e.g. Executive"],["reports","Direct Reports","e.g. 4 direct, 12 total"],["location","Location","e.g. Head Office, Sydney"]].map(([f,l,ph])=><div key={f} style={{marginBottom:10}}>
+      {[["role","Role Title *","e.g. Chief Operations Officer"],["org","Organisation *","e.g. Your Organisation"],["func","Function","e.g. Senior Leadership Team"],["reportsTo","Reports To","e.g. CEO"],["level","Level","e.g. Executive"],["reports","Direct Reports","e.g. 4 direct, 12 total"],["location","Location","e.g. Head Office, Sydney"]].map(([f,l,ph])=><div key={f} style={{marginBottom:10}}>
         <label style={{...mono,fontSize:9,color:T4,letterSpacing:"0.08em",textTransform:"uppercase",display:"block",marginBottom:3}}>{l}</label>
         <input value={form[f]} onChange={e=>upd(f,e.target.value)} placeholder={ph}/>
       </div>)}
@@ -809,7 +809,7 @@ function Tool6OperatingRhythm(){
     <InfoBox>An effective operating rhythm connects strategy to day-to-day delivery. Select the meetings that match your context, assign owners, and download a structured register.</InfoBox>
     <div style={{marginBottom:16}}>
       <label style={{...mono,fontSize:9,color:T4,letterSpacing:"0.08em",textTransform:"uppercase",display:"block",marginBottom:4}}>Organisation / Programme Name</label>
-      <input value={orgName} onChange={e=>setOrgName(e.target.value)} placeholder="e.g. Heka Hoods · FY25 Transformation Programme"/>
+      <input value={orgName} onChange={e=>setOrgName(e.target.value)} placeholder="e.g. Customer Experience Programme · FY25"/>
     </div>
     {layers.map(l=><div key={l} style={{marginBottom:20}}>
       <div style={{...mono,fontSize:10,color:T4,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8,paddingBottom:4,borderBottom:`1px solid ${BDR}`}}>{l} Layer</div>
@@ -1244,9 +1244,9 @@ function Tool10ReviewAccountability(){
       <SL>Programme Details</SL>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
         <div><label style={{...mono,fontSize:9,color:T4,letterSpacing:"0.08em",textTransform:"uppercase",display:"block",marginBottom:4}}>Programme or Initiative Name *</label>
-          <input value={programName} onChange={e=>setProgramName(e.target.value)} placeholder="e.g. ERP Finance Transformation"/></div>
+          <input value={programName} onChange={e=>setProgramName(e.target.value)} placeholder="e.g. Technology Modernisation Programme"/></div>
         <div><label style={{...mono,fontSize:9,color:T4,letterSpacing:"0.08em",textTransform:"uppercase",display:"block",marginBottom:4}}>Sponsor</label>
-          <input value={sponsor} onChange={e=>setSponsor(e.target.value)} placeholder="e.g. CFO — Sarah Chen"/></div>
+          <input value={sponsor} onChange={e=>setSponsor(e.target.value)} placeholder="e.g. Chief Executive Officer"/></div>
         <div><label style={{...mono,fontSize:9,color:T4,letterSpacing:"0.08em",textTransform:"uppercase",display:"block",marginBottom:4}}>Review Forum</label>
           <input value={reviewForum} onChange={e=>setReviewForum(e.target.value)} placeholder="e.g. Programme Steering Committee"/></div>
       </div>
@@ -1273,9 +1273,9 @@ function Tool10ReviewAccountability(){
           <div style={{flex:1}}>
             <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr",gap:8,marginBottom:8}}>
               <div><label style={{...mono,fontSize:9,color:T4,letterSpacing:"0.08em",textTransform:"uppercase",display:"block",marginBottom:3}}>Commitment *</label>
-                <input value={c.commitment} onChange={e=>updateCommitment(c.id,"commitment",e.target.value)} placeholder="e.g. Complete chart of accounts mapping"/></div>
+                <input value={c.commitment} onChange={e=>updateCommitment(c.id,"commitment",e.target.value)} placeholder="e.g. Complete user acceptance testing"/></div>
               <div><label style={{...mono,fontSize:9,color:T4,letterSpacing:"0.08em",textTransform:"uppercase",display:"block",marginBottom:3}}>Owner *</label>
-                <input value={c.owner} onChange={e=>updateCommitment(c.id,"owner",e.target.value)} placeholder="e.g. James Obi"/></div>
+                <input value={c.owner} onChange={e=>updateCommitment(c.id,"owner",e.target.value)} placeholder="e.g. Programme Manager"/></div>
               <div><label style={{...mono,fontSize:9,color:T4,letterSpacing:"0.08em",textTransform:"uppercase",display:"block",marginBottom:3}}>Due Date</label>
                 <input type="date" value={c.dueDate} onChange={e=>updateCommitment(c.id,"dueDate",e.target.value)}/></div>
             </div>
