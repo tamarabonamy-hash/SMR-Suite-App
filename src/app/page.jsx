@@ -3,27 +3,21 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { BRAND, globalBrandCSS, mono, sans } from '@/lib/brand'
 
-const G     = "#2C4A3E"
-const GOLD  = "#D4A847"
-const S1    = "#F7F4EF"
-const S2    = "#EEE9E1"
-const T1    = "#1C2B25"
-const T3    = "#3D5A4F"
-const T4    = "#5A7A6E"
-const BDR   = "rgba(44,74,62,0.15)"
-const RED   = "#B94040"
-const CREAM = "#F7F4EF"
-const mono  = { fontFamily: "'DM Mono',monospace" }
-const serif = { fontFamily: "'Playfair Display',Georgia,serif" }
+const G     = BRAND.teal800
+const GOLD  = BRAND.lime
+const S1    = BRAND.paper
+const S2    = BRAND.surface
+const T1    = BRAND.ink
+const T3    = BRAND.body
+const T4    = BRAND.muted
+const BDR   = BRAND.line
+const RED   = BRAND.error
+const CREAM = BRAND.white
+const serif = sans
 
-const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:#F7F4EF;font-family:'DM Sans',sans-serif;}
-input{background:#EEE9E1;border:1px solid rgba(44,74,62,0.2);color:#1C2B25;font-family:'DM Sans',sans-serif;font-size:14px;padding:12px 16px;outline:none;width:100%;border-radius:0;}
-input:focus{border-color:#D4A847;box-shadow:0 0 0 2px rgba(212,168,71,0.15);}
-`
+const CSS = globalBrandCSS
 
 export default function LoginPage() {
   const [mode, setMode]       = useState('login')
@@ -78,21 +72,21 @@ export default function LoginPage() {
       <div style={{ minHeight:'100vh', background:S1, display:'flex', flexDirection:'column' }}>
 
         {/* Header */}
-        <header style={{ background:G, padding:'0 32px', display:'flex', alignItems:'center', gap:14, height:64, borderBottom:`3px solid ${GOLD}` }}>
+        <header style={{ background:'rgba(255,255,255,0.94)', backdropFilter:'blur(14px)', padding:'0 32px', display:'flex', alignItems:'center', gap:14, minHeight:72, borderBottom:`1px solid ${BDR}` }}>
           <svg width="34" height="34" viewBox="0 0 512 512" fill="none">
-            <ellipse cx="280" cy="256" rx="200" ry="220" stroke="rgba(247,244,239,0.3)" strokeWidth="8" fill="none"/>
-            <ellipse cx="310" cy="256" rx="135" ry="220" stroke="rgba(247,244,239,0.3)" strokeWidth="8" fill="none"/>
-            <ellipse cx="270" cy="256" rx="75"  ry="85"  stroke="rgba(247,244,239,0.3)" strokeWidth="8" fill="none"/>
+            <ellipse cx="280" cy="256" rx="200" ry="220" stroke="rgba(9,82,79,0.22)" strokeWidth="8" fill="none"/>
+            <ellipse cx="310" cy="256" rx="135" ry="220" stroke="rgba(9,82,79,0.22)" strokeWidth="8" fill="none"/>
+            <ellipse cx="270" cy="256" rx="75"  ry="85"  stroke="rgba(9,82,79,0.22)" strokeWidth="8" fill="none"/>
             <circle cx="320" cy="256" r="42" fill={GOLD}/>
-            <circle cx="320" cy="256" r="20" fill="rgba(44,74,62,0.5)"/>
-            <line x1="160" y1="120" x2="185" y2="385" stroke="rgba(247,244,239,0.25)" strokeWidth="7"/>
+            <circle cx="320" cy="256" r="20" fill="rgba(9,82,79,0.55)"/>
+            <line x1="160" y1="120" x2="185" y2="385" stroke="rgba(9,82,79,0.18)" strokeWidth="7"/>
           </svg>
           <div>
-            <div style={{ ...serif, fontSize:15, fontWeight:700, color:CREAM, lineHeight:1.1 }}>
-              STRATEGY <em style={{ fontWeight:400, color:GOLD }}>Made Real</em>
+            <div style={{ ...serif, fontSize:15, fontWeight:700, color:G, lineHeight:1.1 }}>
+              Strategy Made Real
             </div>
-            <div style={{ ...mono, fontSize:8, color:'rgba(247,244,239,0.4)', letterSpacing:'0.1em', textTransform:'uppercase', marginTop:2 }}>
-              Where strategy becomes owned, measurable, and executed.
+            <div style={{ ...mono, fontSize:9, color:T4, letterSpacing:'0.08em', textTransform:'uppercase', marginTop:2 }}>
+              Execution systems for leaders
             </div>
           </div>
         </header>
@@ -110,7 +104,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div style={{ background:S2, border:`1px solid ${BDR}`, padding:32 }}>
+            <div style={{ background:S2, border:`1px solid ${BDR}`, borderRadius:8, boxShadow:'0 20px 42px rgba(6,56,53,0.08)', padding:32 }}>
               <div style={{ marginBottom:16 }}>
                 <label style={{ ...mono, fontSize:9, color:T4, letterSpacing:'0.08em', textTransform:'uppercase', display:'block', marginBottom:6 }}>Email</label>
                 <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" onKeyDown={e=>e.key==='Enter'&&handleSubmit()}/>
@@ -130,7 +124,7 @@ export default function LoginPage() {
               )}
 
               {message && (
-                <div style={{ background:'rgba(44,74,62,0.08)', border:`1px solid ${BDR}`, padding:'10px 14px', marginBottom:16, fontSize:12, color:T3 }}>
+                <div style={{ background:'rgba(9,82,79,0.06)', border:`1px solid ${BDR}`, borderRadius:8, padding:'10px 14px', marginBottom:16, fontSize:12, color:T3 }}>
                   {message}
                 </div>
               )}
@@ -138,7 +132,7 @@ export default function LoginPage() {
               <button
                 onClick={handleSubmit}
                 disabled={loading || !email || (mode!=='reset' && !password)}
-                style={{ width:'100%', background:(loading||!email)?'rgba(212,168,71,0.3)':GOLD, color:G, border:'none', padding:'13px 0', ...mono, fontSize:11, letterSpacing:'0.1em', textTransform:'uppercase', cursor:loading?'not-allowed':'pointer', fontWeight:700 }}
+                style={{ width:'100%', background:(loading||!email)?'rgba(216,243,94,0.34)':GOLD, color:T1, border:'1px solid transparent', borderRadius:8, padding:'13px 0', ...mono, fontSize:11, letterSpacing:'0.08em', textTransform:'uppercase', cursor:loading?'not-allowed':'pointer', fontWeight:700 }}
               >
                 {loading ? 'Please wait...' : mode==='login' ? 'Sign In →' : mode==='signup' ? 'Create Account →' : 'Send Reset Link →'}
               </button>
@@ -160,3 +154,4 @@ export default function LoginPage() {
     </>
   )
 }
+
