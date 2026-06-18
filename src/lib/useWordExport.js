@@ -11,20 +11,20 @@ import { saveAs } from 'file-saver';
 
 // ─── BRAND TOKENS ─────────────────────────────────────────────────────────────
 const C = {
-  GREEN:  "2C4A3E",
-  GOLD:   "D4A847",
-  CREAM:  "F7F4EF",
-  S2:     "EEE9E1",
-  S3:     "E6E0D8",
-  T1:     "1C2B25",
-  T2:     "2C4A3E",
-  T3:     "3D5A4F",
-  T4:     "5A7A6E",
+  GREEN:  "09524F",
+  GOLD:   "D8F35E",
+  CREAM:  "F5F8F6",
+  S2:     "FFFFFF",
+  S3:     "EEF4F1",
+  T1:     "10211F",
+  T2:     "37534F",
+  T3:     "34524E",
+  T4:     "667A76",
   RED:    "B94040",
-  AMBER:  "C89A2A",
-  GMID:   "4A7A68",
+  AMBER:  "9A6A00",
+  GMID:   "0E6964",
   WHITE:  "FFFFFF",
-  LIGHT:  "F5F5F5",
+  LIGHT:  "F5F8F6",
 };
 
 // ─── SHARED HELPERS ────────────────────────────────────────────────────────────
@@ -40,7 +40,7 @@ const CONTENT_WIDTH = 9360; // US Letter, 1" margins
 function run(text, opts = {}) {
   return new TextRun({
     text: String(text || ''),
-    font: "Arial",
+    font: "IBM Plex Sans",
     size: opts.size || 20,
     bold: opts.bold || false,
     color: opts.color || C.T1,
