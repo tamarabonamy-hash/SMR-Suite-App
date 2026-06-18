@@ -4,52 +4,41 @@ import { useState } from "react";
 
 import { exportDiagnostic, exportPrioritisation, exportDecisionStack, exportRoleAnalyser,
          exportRhythm, exportKPIs, exportCapability, exportChange, exportAccountability } from '../lib/useWordExport';
+import { BRAND, globalBrandCSS, mono, sans } from '../lib/brand';
 
 // ─── COLOUR TOKENS ────────────────────────────────────────────────────────────
-const G    = "#2C4A3E";  // Forest green
-const GOLD = "#D4A847";  // Amber gold
-const S1   = "#F7F4EF";  // Cream - page bg
-const S2   = "#EEE9E1";  // Warm card bg
-const S3   = "#E6E0D8";  // Elevated card
-const T1   = "#1C2B25";  // Primary text
-const T2   = "#2C4A3E";  // Secondary text
-const T3   = "#2C4A3E";  // Body text
-const T4   = "#3D5A4F";  // Muted
-const RED  = "#B94040";
-const AMBER= "#C89A2A";
-const G_MID= "#4a7a68";
-const CREAM= "#F7F4EF";
-const BDR  = "rgba(44,74,62,0.15)";
+const G    = BRAND.teal800;
+const GOLD = BRAND.lime;
+const S1   = BRAND.paper;
+const S2   = BRAND.surface;
+const S3   = BRAND.surfaceElevated;
+const T1   = BRAND.ink;
+const T2   = BRAND.textSecondary;
+const T3   = BRAND.body;
+const T4   = BRAND.muted;
+const RED  = BRAND.error;
+const AMBER= BRAND.warning;
+const G_MID= BRAND.teal700;
+const CREAM= BRAND.white;
+const BDR  = BRAND.line;
 
-const mono  = {fontFamily:"'DM Mono',monospace"};
-const serif = {fontFamily:"Cambria,Georgia,'Playfair Display',serif"};
+const serif = sans;
 
-const CSS=`@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
-*{box-sizing:border-box;margin:0;padding:0;}
-body,#root{background:#F7F4EF;color:#1C2B25;font-family:'DM Sans',sans-serif;min-height:100vh;}
-::-webkit-scrollbar{width:5px;}
-::-webkit-scrollbar-track{background:#2C4A3E;}
-::-webkit-scrollbar-thumb{background:rgba(212,168,71,0.5);border-radius:3px;}
-input,textarea,select{background:#EEE9E1;border:1px solid rgba(44,74,62,0.2);color:#1C2B25;font-family:'DM Sans',sans-serif;font-size:13px;padding:9px 12px;outline:none;width:100%;border-radius:0;}
-input:focus,textarea:focus,select:focus{border-color:#D4A847;box-shadow:0 0 0 2px rgba(212,168,71,0.15);}
-select{background:#EEE9E1;cursor:pointer;}
-textarea{resize:vertical;}
-@keyframes spin{to{transform:rotate(360deg);}}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}`;
+const CSS=globalBrandCSS;
 
 // ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
 function SL({children,color=GOLD}){return <div style={{...mono,fontSize:10,color,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:10}}>{children}</div>;}
 function SectionLabel({children,color=GOLD}){return <SL color={color}>{children}</SL>;}
-function Card({children,style={},gold=false}){return <div style={{background:S2,border:`1px solid ${gold?"rgba(212,168,71,0.3)":BDR}`,padding:24,...style}}>{children}</div>;}
-function GBtn({children,onClick,disabled,style={}}){return <button onClick={onClick} disabled={disabled} style={{background:disabled?"rgba(212,168,71,0.3)":GOLD,color:G,border:"none",padding:"11px 26px",...mono,fontSize:11,letterSpacing:"0.1em",textTransform:"uppercase",cursor:disabled?"not-allowed":"pointer",fontWeight:700,transition:"opacity 0.15s",...style}}>{children}</button>;}
+function Card({children,style={},gold=false}){return <div style={{background:S2,border:`1px solid ${gold?"rgba(14,105,100,0.28)":BDR}`,borderRadius:8,boxShadow:"0 16px 34px rgba(6,56,53,0.06)",padding:24,...style}}>{children}</div>;}
+function GBtn({children,onClick,disabled,style={}}){return <button onClick={onClick} disabled={disabled} style={{background:disabled?"rgba(216,243,94,0.34)":GOLD,color:T1,border:"1px solid transparent",borderRadius:8,padding:"11px 26px",...mono,fontSize:11,letterSpacing:"0.08em",textTransform:"uppercase",cursor:disabled?"not-allowed":"pointer",fontWeight:700,transition:"background 0.16s ease, transform 0.16s ease, opacity 0.15s",...style}}>{children}</button>;}
 function GoldButton(p){return <GBtn {...p}/>;}
-function OBtn({children,onClick,style={}}){return <button onClick={onClick} style={{background:"transparent",color:T2,border:`1.5px solid ${G}`,padding:"9px 20px",...mono,fontSize:10,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer",...style}}>{children}</button>;}
+function OBtn({children,onClick,style={}}){return <button onClick={onClick} style={{background:"transparent",color:G,border:`1px solid ${G}`,borderRadius:8,padding:"9px 20px",...mono,fontSize:10,letterSpacing:"0.08em",textTransform:"uppercase",cursor:"pointer",fontWeight:600,...style}}>{children}</button>;}
 function OutlineButton(p){return <OBtn {...p}/>;}
-function Callout({children,color=GOLD}){return <div style={{background:"rgba(212,168,71,0.08)",border:`1px solid rgba(212,168,71,0.25)`,padding:"14px 18px",marginBottom:20,fontSize:13,color:T2,lineHeight:1.7}}>{children}</div>;}
-function TabBar({tabs,active,onChange}){return <div style={{display:"flex",borderBottom:`2px solid ${BDR}`,marginBottom:24}}>{tabs.map(({id,label})=><button key={id} onClick={()=>onChange(id)} style={{background:"none",border:"none",borderBottom:active===id?`2px solid ${GOLD}`:"2px solid transparent",padding:"10px 16px",...mono,fontSize:10,letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer",color:active===id?GOLD:T4,marginBottom:-2,transition:"color 0.15s"}}>{label}</button>)}</div>;}
-function DataTable({headers,rows}){return <div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}><thead><tr>{headers.map((h,i)=><th key={i} style={{...mono,fontSize:9,color:T4,letterSpacing:"0.08em",textTransform:"uppercase",padding:"8px 12px",textAlign:"left",background:S3,borderBottom:`2px solid ${GOLD}`}}>{h}</th>)}</tr></thead><tbody>{rows.map((row,ri)=><tr key={ri} style={{background:ri%2===0?S2:S1}}>{row.map((cell,ci)=><td key={ci} style={{padding:"9px 12px",color:ci===0?T2:T3,fontWeight:ci===0?600:400,borderBottom:`1px solid ${BDR}`,verticalAlign:"top",lineHeight:1.5}}>{cell}</td>)}</tr>)}</tbody></table></div>;}
-function Pill({children,color=GOLD,bg}){return <span style={{...mono,fontSize:9,color:color,background:bg||color+"18",border:`1px solid ${color}44`,padding:"2px 8px",letterSpacing:"0.08em",textTransform:"uppercase",whiteSpace:"nowrap"}}>{children}</span>;}
-function InfoBox({children}){return <div style={{background:"rgba(44,74,62,0.05)",border:`1px solid ${BDR}`,padding:"12px 16px",marginBottom:16,fontSize:12,color:T3,lineHeight:1.7,fontStyle:"italic"}}>{children}</div>;}
+function Callout({children,color=GOLD}){return <div style={{background:"rgba(216,243,94,0.14)",border:`1px solid rgba(14,105,100,0.18)`,borderRadius:8,padding:"14px 18px",marginBottom:20,fontSize:13,color:T2,lineHeight:1.7}}>{children}</div>;}
+function TabBar({tabs,active,onChange}){return <div style={{display:"flex",borderBottom:`1px solid ${BDR}`,marginBottom:24}}>{tabs.map(({id,label})=><button key={id} onClick={()=>onChange(id)} style={{background:"none",border:"none",borderBottom:active===id?`3px solid ${GOLD}`:"3px solid transparent",padding:"10px 16px",...mono,fontSize:10,letterSpacing:"0.08em",textTransform:"uppercase",cursor:"pointer",color:active===id?G:T4,marginBottom:-1,transition:"color 0.15s"}}>{label}</button>)}</div>;}
+function DataTable({headers,rows}){return <div style={{overflowX:"auto",border:`1px solid ${BDR}`,borderRadius:8}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}><thead><tr>{headers.map((h,i)=><th key={i} style={{...mono,fontSize:9,color:T4,letterSpacing:"0.08em",textTransform:"uppercase",padding:"10px 12px",textAlign:"left",background:S3,borderBottom:`1px solid ${BDR}`}}>{h}</th>)}</tr></thead><tbody>{rows.map((row,ri)=><tr key={ri} style={{background:ri%2===0?S2:S1}}>{row.map((cell,ci)=><td key={ci} style={{padding:"10px 12px",color:ci===0?T2:T3,fontWeight:ci===0?600:400,borderBottom:`1px solid ${BDR}`,verticalAlign:"top",lineHeight:1.5}}>{cell}</td>)}</tr>)}</tbody></table></div>;}
+function Pill({children,color=GOLD,bg}){return <span style={{...mono,fontSize:9,color:color===GOLD?T1:color,background:bg||color+"18",border:`1px solid ${color}44`,borderRadius:8,padding:"2px 8px",letterSpacing:"0.08em",textTransform:"uppercase",whiteSpace:"nowrap",fontWeight:600}}>{children}</span>;}
+function InfoBox({children}){return <div style={{background:"rgba(9,82,79,0.05)",border:`1px solid ${BDR}`,borderRadius:8,padding:"12px 16px",marginBottom:16,fontSize:12,color:T3,lineHeight:1.7}}>{children}</div>;}
 
 // ─── TOOL 1 — STRATEGY DIAGNOSTIC ════════════════════════════════════════════
 const DIAG_DIMS=[
@@ -216,7 +205,7 @@ function Tool1Diagnostic({onComplete}){
       return <div key={dim.id} style={{background:S2,border:`1px solid ${BDR}`,marginBottom:2,overflow:"hidden"}}>
         <div onClick={()=>setExpanded(p=>({...p,[dim.id]:!p[dim.id]}))} style={{padding:"18px 22px",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",gap:16,userSelect:"none"}}>
           <div style={{display:"flex",gap:14,alignItems:"center",flex:1}}>
-            <span style={{...mono,fontSize:9,color:"rgba(212,168,71,0.5)"}}>{dim.num}</span>
+            <span style={{...mono,fontSize:9,color:"rgba(9,82,79,0.5)"}}>{dim.num}</span>
             <div>
               <div style={{...serif,fontSize:16,fontWeight:700,color:T1}}>{dim.label}</div>
               <div style={{fontSize:12,color:T3,marginTop:1}}>{dim.tagline}</div>
@@ -245,7 +234,7 @@ function Tool1Diagnostic({onComplete}){
       </div>;
     })}
     <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:24}}>
-      <div style={{fontSize:12,color:scored===6?"rgba(212,168,71,0.7)":RED}}>{scored===6?"All 6 scored — ready to generate results":"Score all 6 dimensions to continue"}</div>
+      <div style={{fontSize:12,color:scored===6?G:RED}}>{scored===6?"All 6 scored — ready to generate results":"Score all 6 dimensions to continue"}</div>
       <GBtn disabled={scored<6} onClick={()=>setView("results")}>Generate Results →</GBtn>
     </div>
   </div>;
@@ -438,7 +427,7 @@ function Tool3DecisionStack({initiatives:passedInitiatives}){
       <div style={{background:G,padding:24,marginBottom:12,color:CREAM}}>
         <div style={{...mono,fontSize:9,color:GOLD,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:6}}>Recommended</div>
         <div style={{...serif,fontSize:28,fontWeight:700,color:CREAM,marginBottom:4}}>{winnerName}</div>
-        <div style={{fontSize:13,color:"rgba(247,244,239,0.7)"}}>Weighted score: {ws(winner).toFixed(2)} / 5.0</div>
+        <div style={{fontSize:13,color:"rgba(255,255,255,0.72)"}}>Weighted score: {ws(winner).toFixed(2)} / 5.0</div>
         {commits[winner]&&<div style={{marginTop:8}}><Pill color={COMMIT_LEVELS.find(c=>c.id===commits[winner])?.color||GOLD}>{COMMIT_LEVELS.find(c=>c.id===commits[winner])?.label}</Pill></div>}
       </div>
       {risk&&<div style={{background:"rgba(185,64,64,0.08)",border:"1px solid rgba(185,64,64,0.25)",padding:"12px 16px",marginBottom:12,fontSize:12,color:RED}}>{risk}</div>}
@@ -507,7 +496,7 @@ function Tool4RoleAnalyser({committedInitiatives}){
       <div><div style={{...mono,fontSize:9,color:GOLD,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:5}}>Strategic Contribution</div><div style={{fontSize:13,color:T2,lineHeight:1.7}}>{result.purposeAndStrategy?.roleContribution}</div></div>
     </div>},
     {id:"2",num:"02",title:"Role Success Statement",content:<div>
-      <div style={{background:"rgba(212,168,71,0.08)",border:"1px solid rgba(212,168,71,0.25)",borderLeft:`4px solid ${GOLD}`,padding:20,marginBottom:12}}><div style={{fontSize:14,color:T1,lineHeight:1.8}}>{result.roleSuccessStatement}</div></div>
+      <div style={{background:"rgba(216,243,94,0.12)",border:"1px solid rgba(14,105,100,0.2)",borderLeft:`4px solid ${GOLD}`,borderRadius:8,padding:20,marginBottom:12}}><div style={{fontSize:14,color:T1,lineHeight:1.8}}>{result.roleSuccessStatement}</div></div>
       <div style={{background:S3,padding:16}}><div style={{...mono,fontSize:9,color:T4,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:6}}>Success in This Business</div><div style={{fontSize:12,color:T3,lineHeight:1.7,fontStyle:"italic"}}>{result.successInBusiness}</div></div>
     </div>},
     {id:"3",num:"03",title:"Core Accountability Pillars",content:<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6}}>
@@ -1123,9 +1112,9 @@ function Tool10ReviewAccountability(){
         <div style={{...mono,fontSize:9,color:GOLD,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:6}}>Review & Accountability Plan</div>
         <div style={{...serif,fontSize:22,fontWeight:700,color:CREAM,marginBottom:8}}>{programName}</div>
         <div style={{display:"flex",gap:20,flexWrap:"wrap"}}>
-          {sponsor&&<div><div style={{...mono,fontSize:8,color:"rgba(247,244,239,0.5)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:2}}>Sponsor</div><div style={{fontSize:12,color:CREAM}}>{sponsor}</div></div>}
-          {reviewForum&&<div><div style={{...mono,fontSize:8,color:"rgba(247,244,239,0.5)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:2}}>Review Forum</div><div style={{fontSize:12,color:CREAM}}>{reviewForum}</div></div>}
-          <div><div style={{...mono,fontSize:8,color:"rgba(247,244,239,0.5)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:2}}>Cadence</div><div style={{fontSize:12,color:GOLD}}>{cadenceLabel}</div></div>
+          {sponsor&&<div><div style={{...mono,fontSize:8,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:2}}>Sponsor</div><div style={{fontSize:12,color:CREAM}}>{sponsor}</div></div>}
+          {reviewForum&&<div><div style={{...mono,fontSize:8,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:2}}>Review Forum</div><div style={{fontSize:12,color:CREAM}}>{reviewForum}</div></div>}
+          <div><div style={{...mono,fontSize:8,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:2}}>Cadence</div><div style={{fontSize:12,color:GOLD}}>{cadenceLabel}</div></div>
         </div>
       </div>
 
@@ -1337,7 +1326,7 @@ const RACI_OPTIONS = ["R","A","C","I","—"];
 
 const RACI_COLORS = {
   "R": { color: G_MID,  bg: "rgba(74,122,104,0.12)",  label: "Responsible" },
-  "A": { color: GOLD,   bg: "rgba(212,168,71,0.12)",   label: "Accountable" },
+  "A": { color: GOLD,   bg: "rgba(216,243,94,0.16)",   label: "Accountable" },
   "C": { color: AMBER,  bg: "rgba(200,154,42,0.12)",   label: "Consulted" },
   "I": { color: T4,     bg: "rgba(90,122,110,0.08)",   label: "Informed" },
   "—": { color: T4,     bg: "transparent",             label: "Not involved" },
@@ -1372,14 +1361,14 @@ function RACICell({ value, onChange }) {
         background: cfg.bg,
         color: cfg.color,
         border: `1.5px solid ${cfg.color === T4 ? BDR : cfg.color+"44"}`,
-        fontFamily: "'DM Mono',monospace",
+        fontFamily: mono.fontFamily,
         fontSize: 12,
         fontWeight: 700,
         padding: "6px 4px",
         textAlign: "center",
         cursor: "pointer",
         width: "100%",
-        borderRadius: 0,
+        borderRadius: 8,
       }}
     >
       {RACI_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
@@ -1561,7 +1550,7 @@ Return ONLY valid JSON in this exact structure:
 
       <div style={{ marginBottom: 20 }}>
         <label style={{ ...mono, fontSize: 9, color: T4, letterSpacing: "0.08em", textTransform: "uppercase", display: "block", marginBottom: 6 }}>Organisation / Team Name</label>
-        <input value={orgName} onChange={e => setOrgName(e.target.value)} placeholder="e.g. Leadership Team · Strategic Review" style={{ background: S2, border: `1px solid ${BDR}`, color: T1, fontFamily: "'DM Sans',sans-serif", fontSize: 13, padding: "9px 12px", outline: "none", width: "100%", borderRadius: 0 }}/>
+        <input value={orgName} onChange={e => setOrgName(e.target.value)} placeholder="e.g. Leadership Team · Strategic Review" style={{ background: S2, border: `1px solid ${BDR}`, color: T1, fontFamily: sans.fontFamily, fontSize: 13, padding: "9px 12px", outline: "none", width: "100%", borderRadius: 8 }}/>
       </div>
 
       <TabBar tabs={[{ id: "raci", label: "Roles & RACI" }, { id: "signals", label: "Overlap Signals" }, { id: "decisions", label: "Decision Tracking" }]} active={tab} onChange={setTab}/>
@@ -1577,10 +1566,10 @@ Return ONLY valid JSON in this exact structure:
               <div key={role.id} style={{ background: S2, border: `1px solid ${BDR}`, padding: 12, marginBottom: 6 }}>
                 <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
                   <span style={{ ...mono, fontSize: 9, color: GOLD, marginTop: 10 }}>{String(i + 1).padStart(2, "0")}</span>
-                  <input value={role.title} onChange={e => updateRole(role.id, "title", e.target.value)} placeholder="Role title e.g. Head of Sales" style={{ background: S3, border: `1px solid ${BDR}`, color: T1, fontFamily: "'DM Sans',sans-serif", fontSize: 12, padding: "8px 10px", outline: "none", flex: 1, borderRadius: 0 }}/>
+                  <input value={role.title} onChange={e => updateRole(role.id, "title", e.target.value)} placeholder="Role title e.g. Head of Sales" style={{ background: S3, border: `1px solid ${BDR}`, color: T1, fontFamily: sans.fontFamily, fontSize: 12, padding: "8px 10px", outline: "none", flex: 1, borderRadius: 8 }}/>
                   {roles.length > 2 && <button onClick={() => removeRole(role.id)} style={{ background: "none", border: "none", color: RED, cursor: "pointer", fontSize: 16, flexShrink: 0 }}>×</button>}
                 </div>
-                <input value={role.function} onChange={e => updateRole(role.id, "function", e.target.value)} placeholder="Function e.g. Commercial" style={{ background: S3, border: `1px solid ${BDR}`, color: T1, fontFamily: "'DM Sans',sans-serif", fontSize: 11, padding: "6px 10px", outline: "none", width: "100%", borderRadius: 0 }}/>
+                <input value={role.function} onChange={e => updateRole(role.id, "function", e.target.value)} placeholder="Function e.g. Commercial" style={{ background: S3, border: `1px solid ${BDR}`, color: T1, fontFamily: sans.fontFamily, fontSize: 11, padding: "6px 10px", outline: "none", width: "100%", borderRadius: 8 }}/>
               </div>
             ))}
             <OBtn onClick={addRole} style={{ width: "100%", marginTop: 4 }}>+ Add Role</OBtn>
@@ -1593,10 +1582,10 @@ Return ONLY valid JSON in this exact structure:
               <div key={proc.id} style={{ background: S2, border: `1px solid ${BDR}`, padding: 12, marginBottom: 6 }}>
                 <div style={{ display: "flex", gap: 6, marginBottom: 6 }}>
                   <span style={{ ...mono, fontSize: 9, color: GOLD, marginTop: 10 }}>{String(i + 1).padStart(2, "0")}</span>
-                  <input value={proc.name} onChange={e => updateProcess(proc.id, "name", e.target.value)} placeholder="e.g. Performance management" style={{ background: S3, border: `1px solid ${BDR}`, color: T1, fontFamily: "'DM Sans',sans-serif", fontSize: 12, padding: "8px 10px", outline: "none", flex: 1, borderRadius: 0 }}/>
+                  <input value={proc.name} onChange={e => updateProcess(proc.id, "name", e.target.value)} placeholder="e.g. Performance management" style={{ background: S3, border: `1px solid ${BDR}`, color: T1, fontFamily: sans.fontFamily, fontSize: 12, padding: "8px 10px", outline: "none", flex: 1, borderRadius: 8 }}/>
                   {processes.length > 2 && <button onClick={() => removeProcess(proc.id)} style={{ background: "none", border: "none", color: RED, cursor: "pointer", fontSize: 16, flexShrink: 0 }}>×</button>}
                 </div>
-                <select value={proc.level} onChange={e => updateProcess(proc.id, "level", e.target.value)} style={{ background: S3, border: `1px solid ${BDR}`, color: T3, fontFamily: "'DM Mono',monospace", fontSize: 10, padding: "6px 10px", width: "100%", borderRadius: 0, cursor: "pointer" }}>
+                <select value={proc.level} onChange={e => updateProcess(proc.id, "level", e.target.value)} style={{ background: S3, border: `1px solid ${BDR}`, color: T3, fontFamily: mono.fontFamily, fontSize: 10, padding: "6px 10px", width: "100%", borderRadius: 8, cursor: "pointer" }}>
                   {OUTCOME_LEVELS.map(l => <option key={l.id} value={l.id}>{l.label} — {l.desc}</option>)}
                 </select>
               </div>
@@ -1609,7 +1598,7 @@ Return ONLY valid JSON in this exact structure:
         {roles.filter(r => r.title).length >= 1 && processes.filter(p => p.name).length >= 1 && (
           <div>
             <SL>RACI Matrix</SL>
-            <div style={{ background: "rgba(212,168,71,0.06)", border: `1px solid rgba(212,168,71,0.2)`, padding: "10px 14px", marginBottom: 12, display: "flex", gap: 16, flexWrap: "wrap" }}>
+            <div style={{ background: "rgba(216,243,94,0.10)", border: `1px solid rgba(14,105,100,0.2)`, padding: "10px 14px", marginBottom: 12, display: "flex", gap: 16, flexWrap: "wrap" }}>
               {Object.entries(RACI_COLORS).filter(([k]) => k !== "—").map(([k, v]) => (
                 <span key={k} style={{ ...mono, fontSize: 10, color: v.color }}><strong>{k}</strong> — {v.label}</span>
               ))}
@@ -1700,15 +1689,15 @@ Return ONLY valid JSON in this exact structure:
             <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr", gap: 10, marginBottom: 10 }}>
               <div>
                 <label style={{ ...mono, fontSize: 9, color: T4, letterSpacing: "0.08em", textTransform: "uppercase", display: "block", marginBottom: 4 }}>Decision Made</label>
-                <input value={d.decision} onChange={e => updateDecision(d.id, "decision", e.target.value)} placeholder="e.g. Approve new hire for Sales team" style={{ background: S3, border: `1px solid ${BDR}`, color: T1, fontFamily: "'DM Sans',sans-serif", fontSize: 12, padding: "8px 10px", outline: "none", width: "100%", borderRadius: 0 }}/>
+                <input value={d.decision} onChange={e => updateDecision(d.id, "decision", e.target.value)} placeholder="e.g. Approve new hire for Sales team" style={{ background: S3, border: `1px solid ${BDR}`, color: T1, fontFamily: sans.fontFamily, fontSize: 12, padding: "8px 10px", outline: "none", width: "100%", borderRadius: 8 }}/>
               </div>
               <div>
                 <label style={{ ...mono, fontSize: 9, color: T4, letterSpacing: "0.08em", textTransform: "uppercase", display: "block", marginBottom: 4 }}>Supposed to Decide</label>
-                <input value={d.supposed} onChange={e => updateDecision(d.id, "supposed", e.target.value)} placeholder="e.g. Head of Sales" style={{ background: S3, border: `1px solid ${BDR}`, color: T1, fontFamily: "'DM Sans',sans-serif", fontSize: 12, padding: "8px 10px", outline: "none", width: "100%", borderRadius: 0 }}/>
+                <input value={d.supposed} onChange={e => updateDecision(d.id, "supposed", e.target.value)} placeholder="e.g. Head of Sales" style={{ background: S3, border: `1px solid ${BDR}`, color: T1, fontFamily: sans.fontFamily, fontSize: 12, padding: "8px 10px", outline: "none", width: "100%", borderRadius: 8 }}/>
               </div>
               <div>
                 <label style={{ ...mono, fontSize: 9, color: T4, letterSpacing: "0.08em", textTransform: "uppercase", display: "block", marginBottom: 4 }}>Actually Decided By</label>
-                <input value={d.actual} onChange={e => updateDecision(d.id, "actual", e.target.value)} placeholder="e.g. CEO" style={{ background: S3, border: `1px solid ${BDR}`, color: T1, fontFamily: "'DM Sans',sans-serif", fontSize: 12, padding: "8px 10px", outline: "none", width: "100%", borderRadius: 0 }}/>
+                <input value={d.actual} onChange={e => updateDecision(d.id, "actual", e.target.value)} placeholder="e.g. CEO" style={{ background: S3, border: `1px solid ${BDR}`, color: T1, fontFamily: sans.fontFamily, fontSize: 12, padding: "8px 10px", outline: "none", width: "100%", borderRadius: 8 }}/>
               </div>
             </div>
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
@@ -1929,19 +1918,19 @@ export default function SMRSuite({ user, onSignOut }){
     <style>{CSS}</style>
 
     {/* Header */}
-    <header style={{background:G,padding:"0 24px",display:"flex",justifyContent:"space-between",alignItems:"stretch",position:"sticky",top:0,zIndex:200,flexShrink:0,minHeight:58,borderBottom:`3px solid ${GOLD}`}}>
+    <header style={{background:"rgba(255,255,255,0.94)",backdropFilter:"blur(14px)",padding:"0 24px",display:"flex",justifyContent:"space-between",alignItems:"stretch",position:"sticky",top:0,zIndex:200,flexShrink:0,minHeight:64,borderBottom:`1px solid ${BDR}`}}>
       <div style={{display:"flex",alignItems:"center",gap:14}}>
         <svg width="34" height="34" viewBox="0 0 512 512" fill="none">
-          <ellipse cx="280" cy="256" rx="200" ry="220" stroke="rgba(247,244,239,0.3)" strokeWidth="8" fill="none"/>
-          <ellipse cx="310" cy="256" rx="135" ry="220" stroke="rgba(247,244,239,0.3)" strokeWidth="8" fill="none"/>
-          <ellipse cx="270" cy="256" rx="75" ry="85" stroke="rgba(247,244,239,0.3)" strokeWidth="8" fill="none"/>
+          <ellipse cx="280" cy="256" rx="200" ry="220" stroke="rgba(9,82,79,0.22)" strokeWidth="8" fill="none"/>
+          <ellipse cx="310" cy="256" rx="135" ry="220" stroke="rgba(9,82,79,0.22)" strokeWidth="8" fill="none"/>
+          <ellipse cx="270" cy="256" rx="75" ry="85" stroke="rgba(9,82,79,0.22)" strokeWidth="8" fill="none"/>
           <circle cx="320" cy="256" r="42" fill={GOLD}/>
-          <circle cx="320" cy="256" r="20" fill="rgba(44,74,62,0.5)"/>
-          <line x1="160" y1="120" x2="185" y2="385" stroke="rgba(247,244,239,0.25)" strokeWidth="7"/>
+          <circle cx="320" cy="256" r="20" fill="rgba(9,82,79,0.55)"/>
+          <line x1="160" y1="120" x2="185" y2="385" stroke="rgba(9,82,79,0.18)" strokeWidth="7"/>
         </svg>
         <div>
-          <div style={{...serif,fontSize:14,fontWeight:700,color:CREAM,lineHeight:1.1}}>STRATEGY <em style={{fontWeight:400,color:GOLD}}>Made Real</em></div>
-          <div style={{...mono,fontSize:8,color:"rgba(247,244,239,0.85)",letterSpacing:"0.1em",textTransform:"uppercase",marginTop:2}}>Where strategy becomes owned, measurable, and executed.</div>
+          <div style={{...serif,fontSize:15,fontWeight:700,color:G,lineHeight:1.1}}>Strategy Made Real</div>
+          <div style={{...mono,fontSize:8,color:T4,letterSpacing:"0.08em",textTransform:"uppercase",marginTop:2}}>Execution systems for leaders</div>
         </div>
       </div>
       <div style={{display:"flex",alignItems:"stretch",gap:0}}>
@@ -1949,14 +1938,14 @@ export default function SMRSuite({ user, onSignOut }){
           const isActive=t.id===activeTool;
           const isDone=TOOLS.findIndex(x=>x.id===activeTool)>i;
           return <button key={t.id} onClick={()=>setActiveTool(t.id)} style={{background:"none",border:"none",borderBottom:isActive?`3px solid ${GOLD}`:"3px solid transparent",borderTop:"3px solid transparent",padding:"0 10px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,transition:"all 0.15s",minWidth:40}}>
-            <div style={{...mono,fontSize:8,color:isActive?GOLD:isDone?"rgba(212,168,71,0.45)":"rgba(247,244,239,0.22)",letterSpacing:"0.04em",transition:"color 0.15s"}}>{t.num}</div>
-            <div style={{width:4,height:4,borderRadius:"50%",background:isActive?GOLD:isDone?"rgba(212,168,71,0.35)":"rgba(247,244,239,0.15)",transition:"background 0.15s"}}/>
+            <div style={{...mono,fontSize:8,color:isActive?G:isDone?"rgba(9,82,79,0.54)":"rgba(9,82,79,0.28)",letterSpacing:"0.04em",transition:"color 0.15s"}}>{t.num}</div>
+            <div style={{width:4,height:4,borderRadius:"50%",background:isActive?GOLD:isDone?"rgba(9,82,79,0.35)":"rgba(9,82,79,0.15)",transition:"background 0.15s"}}/>
           </button>;
         })}
       </div>
       <div style={{display:"flex",alignItems:"center",gap:12}}>
-        {user?.email&&<div style={{...mono,fontSize:8,color:"rgba(247,244,239,0.4)",letterSpacing:"0.06em"}}>{user.email}</div>}
-        <button onClick={onSignOut} style={{background:"transparent",border:"1px solid rgba(247,244,239,0.2)",color:"rgba(247,244,239,0.6)",padding:"5px 12px",...mono,fontSize:8,letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer"}}>Sign Out</button>
+        {user?.email&&<div style={{...mono,fontSize:8,color:T4,letterSpacing:"0.06em"}}>{user.email}</div>}
+        <button onClick={onSignOut} style={{background:"transparent",border:`1px solid ${BDR}`,color:G,borderRadius:8,padding:"6px 12px",...mono,fontSize:8,letterSpacing:"0.08em",textTransform:"uppercase",cursor:"pointer",fontWeight:600}}>Sign Out</button>
       </div>
     </header>
 
@@ -1964,11 +1953,11 @@ export default function SMRSuite({ user, onSignOut }){
     <div style={{display:"flex",flex:1,overflow:"hidden"}}>
 
       {/* Sidebar */}
-      <nav style={{width:224,flexShrink:0,background:G,overflowY:"auto",position:"sticky",top:58,height:"calc(100vh - 58px)",display:"flex",flexDirection:"column",borderRight:"1px solid rgba(212,168,71,0.15)"}}>
+      <nav style={{width:244,flexShrink:0,background:G,overflowY:"auto",position:"sticky",top:64,height:"calc(100vh - 64px)",display:"flex",flexDirection:"column",borderRight:"1px solid rgba(255,255,255,0.14)"}}>
         <div style={{padding:"12px 0",flex:1}}>
           {["Think","Do","Enable"].map(group=>{
             const groupTools=TOOLS.filter(t=>t.group===group);
-            const groupColors={"Think":"rgba(212,168,71,0.7)","Do":"rgba(90,170,130,0.7)","Enable":"rgba(147,112,180,0.7)"};
+            const groupColors={"Think":BRAND.mint,"Do":GOLD,"Enable":"rgba(255,255,255,0.72)"};
             const groupDesc={"Think":"Clarify direction & priorities","Do":"Turn strategy into delivery","Enable":"People, accountability & follow-through"};
             return <div key={group} style={{marginBottom:4}}>
               <div style={{padding:"8px 16px 4px",display:"flex",alignItems:"center",gap:8}}>
@@ -1978,33 +1967,33 @@ export default function SMRSuite({ user, onSignOut }){
               {groupTools.map((t,i)=>{
                 const isActive=activeTool===t.id;
                 const isDone=TOOLS.findIndex(x=>x.id===activeTool)>TOOLS.findIndex(x=>x.id===t.id);
-                return <button key={t.id} onClick={()=>setActiveTool(t.id)} style={{width:"100%",background:isActive?"rgba(212,168,71,0.12)":"transparent",border:"none",borderLeft:isActive?`3px solid ${GOLD}`:"3px solid transparent",padding:"8px 14px 8px 20px",cursor:"pointer",textAlign:"left",transition:"all 0.15s",display:"block",position:"relative"}}>
+                return <button key={t.id} onClick={()=>setActiveTool(t.id)} style={{width:"100%",background:isActive?"rgba(216,243,94,0.13)":"transparent",border:"none",borderLeft:isActive?`3px solid ${GOLD}`:"3px solid transparent",borderRadius:0,padding:"9px 16px 9px 20px",cursor:"pointer",textAlign:"left",transition:"all 0.15s",display:"block",position:"relative"}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:1}}>
-                    <div style={{...mono,fontSize:8,color:isActive?GOLD:isDone?"rgba(212,168,71,0.5)":"rgba(247,244,239,0.4)",letterSpacing:"0.06em"}}>{t.num}</div>
-                    {isDone&&<span style={{color:"rgba(212,168,71,0.5)",fontSize:9}}>✓</span>}
+                    <div style={{...mono,fontSize:8,color:isActive?GOLD:isDone?"rgba(216,243,94,0.5)":"rgba(255,255,255,0.42)",letterSpacing:"0.06em"}}>{t.num}</div>
+                    {isDone&&<span style={{color:"rgba(216,243,94,0.5)",fontSize:9}}>✓</span>}
                   </div>
-                  <div style={{fontSize:11,fontWeight:600,color:isActive?CREAM:"rgba(247,244,239,0.82)",lineHeight:1.3,marginBottom:2}}>{t.label}</div>
-                  <div style={{fontSize:9,color:isActive?"rgba(247,244,239,0.6)":"rgba(247,244,239,0.42)",lineHeight:1.4}}>{t.sub}</div>
+                  <div style={{fontSize:12,fontWeight:600,color:isActive?CREAM:"rgba(255,255,255,0.84)",lineHeight:1.3,marginBottom:2}}>{t.label}</div>
+                  <div style={{fontSize:10,color:isActive?"rgba(255,255,255,0.66)":"rgba(255,255,255,0.46)",lineHeight:1.4}}>{t.sub}</div>
                 </button>;
               })}
             </div>;
           })}
         </div>
-        <div style={{padding:"12px 16px",borderTop:"1px solid rgba(247,244,239,0.08)"}}>
-          <div style={{...mono,fontSize:8,color:"rgba(247,244,239,0.4)",letterSpacing:"0.06em",lineHeight:1.9}}>Strategy Made Real<br/>Nine Tools · One Pathway</div>
+        <div style={{padding:"14px 16px",borderTop:"1px solid rgba(255,255,255,0.1)"}}>
+          <div style={{...mono,fontSize:8,color:"rgba(255,255,255,0.5)",letterSpacing:"0.06em",lineHeight:1.9}}>Strategy Made Real<br/>Nine Tools · One Pathway</div>
         </div>
       </nav>
 
       {/* Content */}
       <div style={{flex:1,overflowY:"auto",background:S1}}>
         {/* Tool hero */}
-        <div style={{padding:"20px 28px 16px",background:S1,borderBottom:`1px solid ${BDR}`,flexShrink:0}}>
-          <div style={{display:"inline-block",...mono,fontSize:9,color:G,background:GOLD,padding:"2px 8px",letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:8}}>Tool {active.num} · {active.phase}</div>
-          <div style={{...serif,fontSize:"clamp(20px,2.2vw,30px)",fontWeight:700,color:T1,lineHeight:1.15}}>{active.label}</div>
-          <div style={{fontSize:13,color:T3,marginTop:3}}>{active.sub}</div>
+        <div style={{padding:"24px 32px 18px",background:S1,borderBottom:`1px solid ${BDR}`,flexShrink:0}}>
+          <div style={{display:"inline-block",...mono,fontSize:9,color:T1,background:GOLD,borderRadius:8,padding:"3px 9px",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:10,fontWeight:600}}>Tool {active.num} · {active.phase}</div>
+          <div style={{...serif,fontSize:"clamp(22px,2.2vw,32px)",fontWeight:700,color:T1,lineHeight:1.1}}>{active.label}</div>
+          <div style={{fontSize:14,color:T3,marginTop:4}}>{active.sub}</div>
         </div>
         {/* Tool body */}
-        <div style={{padding:"24px 28px 64px",maxWidth:activeTool==="orgclarity"?"none":980,margin:"0 auto",width:"100%"}}>
+        <div style={{padding:"28px 32px 72px",maxWidth:activeTool==="orgclarity"?"none":1040,margin:"0 auto",width:"100%"}}>
           {activeTool==="diagnostic"     && <Tool1Diagnostic onComplete={handleDiagnosticComplete}/>}
           {activeTool==="prioritisation" && <Tool2Prioritisation diagnosticScores={diagnosticScores} onComplete={handlePrioritisationComplete}/>}
           {activeTool==="decision"       && <Tool3DecisionStack initiatives={initiatives}/>}
