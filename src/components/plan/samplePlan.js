@@ -43,7 +43,7 @@ export function samplePlan() {
   ]
 
   const reviews = [
-    { id: 'r1', type: 'weekly', date: d(8), summary: 'Pipeline is strong; onboarding integration is the main risk to the quarter.',
+    { id: 'r1', type: 'weekly', date: d(-8), summary: 'Pipeline is strong; onboarding integration is the main risk to the quarter.',
       decisions: [{ goalId: 'g3', issue: 'Integration vendor delayed API access.', decision: 'Escalate to vendor CEO; build CSV import as a fallback.' }] },
   ]
 
