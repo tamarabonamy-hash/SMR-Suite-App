@@ -1940,6 +1940,7 @@ export default function SMRSuite({ user, onSignOut }){
         })}
       </div>
       <div style={{display:"flex",alignItems:"center",gap:12}}>
+        <a href="/dashboard/plan" style={{background:G,color:CREAM,borderRadius:999,padding:"7px 14px",...mono,fontSize:9,letterSpacing:"0.08em",textTransform:"uppercase",textDecoration:"none",fontWeight:600,whiteSpace:"nowrap"}}>Operating Plan · Beta</a>
         {user?.email&&<div style={{...mono,fontSize:8,color:T4,letterSpacing:"0.06em"}}>{user.email}</div>}
         <button onClick={onSignOut} style={{background:"transparent",border:`1px solid ${BDR}`,color:G,borderRadius:8,padding:"6px 12px",...mono,fontSize:8,letterSpacing:"0.08em",textTransform:"uppercase",cursor:"pointer",fontWeight:600}}>Sign Out</button>
       </div>
