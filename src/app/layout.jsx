@@ -6,7 +6,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, padding: 0, background: '#F5F8F6' }}>
+      <body style={{ margin: 0, padding: 0, background: '#F5F0E7' }}>
         {children}
       </body>
     </html>

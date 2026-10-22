@@ -1,36 +1,41 @@
+// Strategy Made Real brand (matches strategymadereal.com.au).
+// Legacy key names are kept so existing components keep working.
 export const BRAND = {
-  teal900: "#063835",
-  teal800: "#09524F",
-  teal700: "#0E6964",
-  teal100: "#DDECE9",
-  mint: "#87D3C5",
-  lime: "#D8F35E",
-  limeHover: "#C7E650",
-  white: "#FFFFFF",
-  paper: "#F5F8F6",
-  surface: "#FFFFFF",
-  surfaceElevated: "#EEF4F1",
-  ink: "#10211F",
-  textSecondary: "#37534F",
-  body: "#34524E",
-  muted: "#667A76",
-  line: "rgba(9,82,79,0.16)",
-  focus: "rgba(135,211,197,0.42)",
+  teal900: "#1F3F3D",
+  teal800: "#2E5A57",   // deep teal
+  teal700: "#557C78",   // teal
+  teal100: "#E7E0D3",
+  mint: "#A9C3BF",      // light teal, for accents on deep teal
+  lime: "#557C78",      // primary accent (was lime)
+  limeHover: "#2E5A57",
+  white: "#FCFAF5",     // soft ivory
+  ivory: "#F5F0E7",
+  paper: "#F5F0E7",
+  surface: "#FCFAF5",
+  surfaceElevated: "#EEE7DA",
+  ink: "#171717",
+  textSecondary: "#2B2B2B",
+  body: "#3D3A36",
+  muted: "#6B6760",
+  line: "rgba(23,23,23,0.12)",
+  focus: "rgba(85,124,120,0.28)",
   error: "#B94040",
   warning: "#9A6A00",
-  success: "#0E6964",
+  success: "#2E5A57",
 }
 
 export const brandFonts = {
+  serif: "'Cormorant Garamond', Georgia, serif",
   sans: "'IBM Plex Sans', Arial, sans-serif",
-  mono: "'JetBrains Mono', monospace",
+  mono: "'IBM Plex Mono', 'Courier New', monospace",
 }
 
+export const serif = { fontFamily: brandFonts.serif }
 export const mono = { fontFamily: brandFonts.mono }
 export const sans = { fontFamily: brandFonts.sans }
 
 export const globalBrandCSS = `
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
 :root{
   --smr-bg:${BRAND.paper};
   --smr-surface:${BRAND.surface};
@@ -60,10 +65,10 @@ button,input,textarea,select{font:inherit;}
 button{border-radius:8px;}
 ::-webkit-scrollbar{width:7px;height:7px;}
 ::-webkit-scrollbar-track{background:${BRAND.teal100};}
-::-webkit-scrollbar-thumb{background:rgba(9,82,79,0.34);border-radius:8px;}
+::-webkit-scrollbar-thumb{background:rgba(46,90,87,0.34);border-radius:8px;}
 input,textarea,select{
   background:var(--smr-surface);
-  border:1px solid rgba(9,82,79,0.2);
+  border:1px solid rgba(23,23,23,0.18);
   color:var(--smr-ink);
   font-family:${brandFonts.sans};
   font-size:13px;

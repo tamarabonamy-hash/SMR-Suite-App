@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { exportDiagnostic, exportPrioritisation, exportDecisionStack, exportRoleAnalyser,
          exportRhythm, exportKPIs, exportCapability, exportChange, exportAccountability } from '../lib/useWordExport';
-import { BRAND, globalBrandCSS, mono, sans } from '../lib/brand';
+import { BRAND, globalBrandCSS, mono, sans, serif as serifFont } from '../lib/brand';
 
 // ─── COLOUR TOKENS ────────────────────────────────────────────────────────────
 const G    = BRAND.teal800;
@@ -22,23 +22,23 @@ const G_MID= BRAND.teal700;
 const CREAM= BRAND.white;
 const BDR  = BRAND.line;
 
-const serif = sans;
+const serif = serifFont;
 
 const CSS=globalBrandCSS;
 
 // ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
 function SL({children,color=GOLD}){return <div style={{...mono,fontSize:10,color,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:10}}>{children}</div>;}
 function SectionLabel({children,color=GOLD}){return <SL color={color}>{children}</SL>;}
-function Card({children,style={},gold=false}){return <div style={{background:S2,border:`1px solid ${gold?"rgba(14,105,100,0.28)":BDR}`,borderRadius:8,boxShadow:"0 16px 34px rgba(6,56,53,0.06)",padding:24,...style}}>{children}</div>;}
-function GBtn({children,onClick,disabled,style={}}){return <button onClick={onClick} disabled={disabled} style={{background:disabled?"rgba(216,243,94,0.34)":GOLD,color:T1,border:"1px solid transparent",borderRadius:8,padding:"11px 26px",...mono,fontSize:11,letterSpacing:"0.08em",textTransform:"uppercase",cursor:disabled?"not-allowed":"pointer",fontWeight:700,transition:"background 0.16s ease, transform 0.16s ease, opacity 0.15s",...style}}>{children}</button>;}
+function Card({children,style={},gold=false}){return <div style={{background:S2,border:`1px solid ${gold?"rgba(14,105,100,0.28)":BDR}`,borderRadius:8,boxShadow:"0 16px 34px rgba(23,23,23,0.06)",padding:24,...style}}>{children}</div>;}
+function GBtn({children,onClick,disabled,style={}}){return <button onClick={onClick} disabled={disabled} style={{background:disabled?"rgba(46,90,87,0.34)":G,color:CREAM,border:"1px solid transparent",borderRadius:999,padding:"11px 26px",...mono,fontSize:11,letterSpacing:"0.08em",textTransform:"uppercase",cursor:disabled?"not-allowed":"pointer",fontWeight:700,transition:"background 0.16s ease, transform 0.16s ease, opacity 0.15s",...style}}>{children}</button>;}
 function GoldButton(p){return <GBtn {...p}/>;}
-function OBtn({children,onClick,style={}}){return <button onClick={onClick} style={{background:"transparent",color:G,border:`1px solid ${G}`,borderRadius:8,padding:"9px 20px",...mono,fontSize:10,letterSpacing:"0.08em",textTransform:"uppercase",cursor:"pointer",fontWeight:600,...style}}>{children}</button>;}
+function OBtn({children,onClick,style={}}){return <button onClick={onClick} style={{background:"transparent",color:G,border:`1px solid ${G}`,borderRadius:999,padding:"9px 20px",...mono,fontSize:10,letterSpacing:"0.08em",textTransform:"uppercase",cursor:"pointer",fontWeight:600,...style}}>{children}</button>;}
 function OutlineButton(p){return <OBtn {...p}/>;}
-function Callout({children,color=GOLD}){return <div style={{background:"rgba(216,243,94,0.14)",border:`1px solid rgba(14,105,100,0.18)`,borderRadius:8,padding:"14px 18px",marginBottom:20,fontSize:13,color:T2,lineHeight:1.7}}>{children}</div>;}
+function Callout({children,color=GOLD}){return <div style={{background:"rgba(85,124,120,0.14)",border:`1px solid rgba(14,105,100,0.18)`,borderRadius:8,padding:"14px 18px",marginBottom:20,fontSize:13,color:T2,lineHeight:1.7}}>{children}</div>;}
 function TabBar({tabs,active,onChange}){return <div style={{display:"flex",borderBottom:`1px solid ${BDR}`,marginBottom:24}}>{tabs.map(({id,label})=><button key={id} onClick={()=>onChange(id)} style={{background:"none",border:"none",borderBottom:active===id?`3px solid ${GOLD}`:"3px solid transparent",padding:"10px 16px",...mono,fontSize:10,letterSpacing:"0.08em",textTransform:"uppercase",cursor:"pointer",color:active===id?G:T4,marginBottom:-1,transition:"color 0.15s"}}>{label}</button>)}</div>;}
 function DataTable({headers,rows}){return <div style={{overflowX:"auto",border:`1px solid ${BDR}`,borderRadius:8}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}><thead><tr>{headers.map((h,i)=><th key={i} style={{...mono,fontSize:9,color:T4,letterSpacing:"0.08em",textTransform:"uppercase",padding:"10px 12px",textAlign:"left",background:S3,borderBottom:`1px solid ${BDR}`}}>{h}</th>)}</tr></thead><tbody>{rows.map((row,ri)=><tr key={ri} style={{background:ri%2===0?S2:S1}}>{row.map((cell,ci)=><td key={ci} style={{padding:"10px 12px",color:ci===0?T2:T3,fontWeight:ci===0?600:400,borderBottom:`1px solid ${BDR}`,verticalAlign:"top",lineHeight:1.5}}>{cell}</td>)}</tr>)}</tbody></table></div>;}
 function Pill({children,color=GOLD,bg}){return <span style={{...mono,fontSize:9,color:color===GOLD?T1:color,background:bg||color+"18",border:`1px solid ${color}44`,borderRadius:8,padding:"2px 8px",letterSpacing:"0.08em",textTransform:"uppercase",whiteSpace:"nowrap",fontWeight:600}}>{children}</span>;}
-function InfoBox({children}){return <div style={{background:"rgba(9,82,79,0.05)",border:`1px solid ${BDR}`,borderRadius:8,padding:"12px 16px",marginBottom:16,fontSize:12,color:T3,lineHeight:1.7}}>{children}</div>;}
+function InfoBox({children}){return <div style={{background:"rgba(46,90,87,0.05)",border:`1px solid ${BDR}`,borderRadius:8,padding:"12px 16px",marginBottom:16,fontSize:12,color:T3,lineHeight:1.7}}>{children}</div>;}
 
 // ─── TOOL 1 — STRATEGY DIAGNOSTIC ════════════════════════════════════════════
 const DIAG_DIMS=[
@@ -205,7 +205,7 @@ function Tool1Diagnostic({onComplete}){
       return <div key={dim.id} style={{background:S2,border:`1px solid ${BDR}`,marginBottom:2,overflow:"hidden"}}>
         <div onClick={()=>setExpanded(p=>({...p,[dim.id]:!p[dim.id]}))} style={{padding:"18px 22px",cursor:"pointer",display:"flex",justifyContent:"space-between",alignItems:"center",gap:16,userSelect:"none"}}>
           <div style={{display:"flex",gap:14,alignItems:"center",flex:1}}>
-            <span style={{...mono,fontSize:9,color:"rgba(9,82,79,0.5)"}}>{dim.num}</span>
+            <span style={{...mono,fontSize:9,color:"rgba(46,90,87,0.5)"}}>{dim.num}</span>
             <div>
               <div style={{...serif,fontSize:16,fontWeight:700,color:T1}}>{dim.label}</div>
               <div style={{fontSize:12,color:T3,marginTop:1}}>{dim.tagline}</div>
@@ -310,7 +310,7 @@ function Tool2Prioritisation({diagnosticScores,onComplete}){
         {PCRITERIA.map(c=><div key={c.id} style={{background:S3,padding:"10px 10px 6px"}}>
           <div style={{...mono,fontSize:8,color:GOLD,letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:2}}>{c.label}</div>
           <div style={{fontSize:10,color:T4,marginBottom:6,lineHeight:1.4}}>{c.desc}</div>
-          <div style={{display:"flex",gap:3}}>{[1,2,3,4,5].map(v=><button key={v} onClick={()=>updateScore(init.id,c.id,v)} style={{flex:1,padding:"4px 0",...mono,fontSize:10,cursor:"pointer",border:"none",background:init.scores[c.id]===v?GOLD:S2,color:init.scores[c.id]===v?G:T4,transition:"all 0.1s"}}>{v}</button>)}</div>
+          <div style={{display:"flex",gap:3}}>{[1,2,3,4,5].map(v=><button key={v} onClick={()=>updateScore(init.id,c.id,v)} style={{flex:1,padding:"4px 0",...mono,fontSize:10,cursor:"pointer",border:"none",background:init.scores[c.id]===v?GOLD:S2,color:init.scores[c.id]===v?CREAM:T4,transition:"all 0.1s"}}>{v}</button>)}</div>
           <div style={{...mono,fontSize:8,color:T4,marginTop:3,textAlign:"right"}}>{Math.round(c.weight*100)}% weight</div>
         </div>)}
       </div>
@@ -364,7 +364,7 @@ function Tool3DecisionStack({initiatives:passedInitiatives}){
     {passedInitiatives&&passedInitiatives.length>0&&<div style={{marginBottom:16}}>
       <SL>Committed Initiatives from Prioritisation</SL>
       <div style={{display:"flex",flexWrap:"wrap",gap:6,marginBottom:12}}>
-        {passedInitiatives.filter(i=>i.weightedScore>=2.8).map(i=><button key={i.id} onClick={()=>setTitle(i.name)} style={{...mono,fontSize:10,padding:"4px 10px",background:title===i.name?GOLD:"transparent",color:title===i.name?G:T3,border:`1px solid ${title===i.name?GOLD:BDR}`,cursor:"pointer"}}>{i.name}</button>)}
+        {passedInitiatives.filter(i=>i.weightedScore>=2.8).map(i=><button key={i.id} onClick={()=>setTitle(i.name)} style={{...mono,fontSize:10,padding:"4px 10px",background:title===i.name?GOLD:"transparent",color:title===i.name?CREAM:T3,border:`1px solid ${title===i.name?GOLD:BDR}`,cursor:"pointer"}}>{i.name}</button>)}
       </div>
     </div>}
     <div style={{marginBottom:14}}>
@@ -392,7 +392,7 @@ function Tool3DecisionStack({initiatives:passedInitiatives}){
           </div>
           <span style={{...mono,fontSize:9,color:T4}}>{Math.round(dim.weight*100)}% weight</span>
         </div>
-        <div style={{display:"flex",gap:4}}>{[1,2,3,4,5].map(v=><button key={v} onClick={()=>setScores(p=>({...p,[opt]:{...p[opt],[dim.id]:v}}))} style={{flex:1,padding:"8px 0",...mono,fontSize:12,cursor:"pointer",border:"none",background:scores[opt][dim.id]===v?GOLD:S3,color:scores[opt][dim.id]===v?G:T4,fontWeight:scores[opt][dim.id]===v?700:400,transition:"all 0.1s"}}>{v}</button>)}</div>
+        <div style={{display:"flex",gap:4}}>{[1,2,3,4,5].map(v=><button key={v} onClick={()=>setScores(p=>({...p,[opt]:{...p[opt],[dim.id]:v}}))} style={{flex:1,padding:"8px 0",...mono,fontSize:12,cursor:"pointer",border:"none",background:scores[opt][dim.id]===v?GOLD:S3,color:scores[opt][dim.id]===v?CREAM:T4,fontWeight:scores[opt][dim.id]===v?700:400,transition:"all 0.1s"}}>{v}</button>)}</div>
       </div>)}
       <div style={{background:S3,padding:16,marginTop:8}}>
         <SL>Commitment Level</SL>
@@ -425,7 +425,7 @@ function Tool3DecisionStack({initiatives:passedInitiatives}){
     const risk=commitRisk(winner);
     return <div style={{animation:"fadeIn 0.3s ease"}}>
       <div style={{background:G,padding:24,marginBottom:12,color:CREAM}}>
-        <div style={{...mono,fontSize:9,color:GOLD,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:6}}>Recommended</div>
+        <div style={{...mono,fontSize:9,color:BRAND.mint,letterSpacing:"0.14em",textTransform:"uppercase",marginBottom:6}}>Recommended</div>
         <div style={{...serif,fontSize:28,fontWeight:700,color:CREAM,marginBottom:4}}>{winnerName}</div>
         <div style={{fontSize:13,color:"rgba(255,255,255,0.72)"}}>Weighted score: {ws(winner).toFixed(2)} / 5.0</div>
         {commits[winner]&&<div style={{marginTop:8}}><Pill color={COMMIT_LEVELS.find(c=>c.id===commits[winner])?.color||GOLD}>{COMMIT_LEVELS.find(c=>c.id===commits[winner])?.label}</Pill></div>}
@@ -489,19 +489,19 @@ function Tool4RoleAnalyser({committedInitiatives}){
     {id:"1",num:"01",title:"Role Context",content:<div>
       <div style={{background:G,padding:20,marginBottom:12}}>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
-          {[["Role Title",result.roleContext?.title||form.role],["Reports To",result.roleContext?.reportsTo||"—"],["Function",result.roleContext?.function||"—"],["Location",result.roleContext?.location||"—"]].map(([l,v])=><div key={l}><div style={{...mono,fontSize:9,color:GOLD,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:3}}>{l}</div><div style={{fontSize:13,color:CREAM}}>{v}</div></div>)}
+          {[["Role Title",result.roleContext?.title||form.role],["Reports To",result.roleContext?.reportsTo||"—"],["Function",result.roleContext?.function||"—"],["Location",result.roleContext?.location||"—"]].map(([l,v])=><div key={l}><div style={{...mono,fontSize:9,color:BRAND.mint,letterSpacing:"0.1em",textTransform:"uppercase",marginBottom:3}}>{l}</div><div style={{fontSize:13,color:CREAM}}>{v}</div></div>)}
         </div>
       </div>
       <div style={{marginBottom:10}}><div style={{...mono,fontSize:9,color:GOLD,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:5}}>Organisation Purpose</div><div style={{fontSize:13,color:T2,lineHeight:1.7}}>{result.purposeAndStrategy?.organisationPurpose}</div></div>
       <div><div style={{...mono,fontSize:9,color:GOLD,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:5}}>Strategic Contribution</div><div style={{fontSize:13,color:T2,lineHeight:1.7}}>{result.purposeAndStrategy?.roleContribution}</div></div>
     </div>},
     {id:"2",num:"02",title:"Role Success Statement",content:<div>
-      <div style={{background:"rgba(216,243,94,0.12)",border:"1px solid rgba(14,105,100,0.2)",borderLeft:`4px solid ${GOLD}`,borderRadius:8,padding:20,marginBottom:12}}><div style={{fontSize:14,color:T1,lineHeight:1.8}}>{result.roleSuccessStatement}</div></div>
+      <div style={{background:"rgba(85,124,120,0.12)",border:"1px solid rgba(14,105,100,0.2)",borderLeft:`4px solid ${GOLD}`,borderRadius:8,padding:20,marginBottom:12}}><div style={{fontSize:14,color:T1,lineHeight:1.8}}>{result.roleSuccessStatement}</div></div>
       <div style={{background:S3,padding:16}}><div style={{...mono,fontSize:9,color:T4,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:6}}>Success in This Business</div><div style={{fontSize:12,color:T3,lineHeight:1.7,fontStyle:"italic"}}>{result.successInBusiness}</div></div>
     </div>},
     {id:"3",num:"03",title:"Core Accountability Pillars",content:<div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6}}>
-      {(result.accountabilityPillars||[]).map((p,i)=><div key={i} style={{background:G,padding:14,borderTop:`3px solid ${GOLD}`}}>
-        <div style={{...mono,fontSize:9,color:GOLD,marginBottom:4}}>{String(i+1).padStart(2,"0")}</div>
+      {(result.accountabilityPillars||[]).map((p,i)=><div key={i} style={{background:G,padding:14,borderTop:`3px solid ${BRAND.mint}`}}>
+        <div style={{...mono,fontSize:9,color:BRAND.mint,marginBottom:4}}>{String(i+1).padStart(2,"0")}</div>
         <div style={{...serif,fontSize:13,fontWeight:700,color:CREAM}}>{p}</div>
       </div>)}
     </div>},
@@ -962,7 +962,7 @@ function Tool8ChangeAdoption(){
       <div><label style={{...mono,fontSize:9,color:T4,letterSpacing:"0.08em",textTransform:"uppercase",display:"block",marginBottom:4}}>Impacted Groups</label>
         <input value={groups} onChange={e=>setGroups(e.target.value)} placeholder="e.g. Sales team, Finance, Customer service"/></div>
       <div><label style={{...mono,fontSize:9,color:T4,letterSpacing:"0.08em",textTransform:"uppercase",display:"block",marginBottom:4}}>Scale of change (1–5)</label>
-        <div style={{display:"flex",gap:4,marginTop:6}}>{[1,2,3,4,5].map(v=><button key={v} onClick={()=>setScope(v)} style={{flex:1,padding:"8px 0",...mono,fontSize:11,cursor:"pointer",border:"none",background:scope===v?GOLD:S3,color:scope===v?G:T4,fontWeight:scope===v?700:400,transition:"all 0.1s"}}>{v}</button>)}</div>
+        <div style={{display:"flex",gap:4,marginTop:6}}>{[1,2,3,4,5].map(v=><button key={v} onClick={()=>setScope(v)} style={{flex:1,padding:"8px 0",...mono,fontSize:11,cursor:"pointer",border:"none",background:scope===v?GOLD:S3,color:scope===v?CREAM:T4,fontWeight:scope===v?700:400,transition:"all 0.1s"}}>{v}</button>)}</div>
         <div style={{display:"flex",justifyContent:"space-between",marginTop:3}}><span style={{fontSize:10,color:T4}}>Incremental</span><span style={{fontSize:10,color:T4}}>Transformational</span></div>
       </div>
     </div>
@@ -1109,7 +1109,7 @@ function Tool10ReviewAccountability(){
 
       {/* Header block */}
       <div style={{background:G,padding:"20px 24px",marginBottom:16}}>
-        <div style={{...mono,fontSize:9,color:GOLD,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:6}}>Review & Accountability Plan</div>
+        <div style={{...mono,fontSize:9,color:BRAND.mint,letterSpacing:"0.12em",textTransform:"uppercase",marginBottom:6}}>Review & Accountability Plan</div>
         <div style={{...serif,fontSize:22,fontWeight:700,color:CREAM,marginBottom:8}}>{programName}</div>
         <div style={{display:"flex",gap:20,flexWrap:"wrap"}}>
           {sponsor&&<div><div style={{...mono,fontSize:8,color:"rgba(255,255,255,0.5)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:2}}>Sponsor</div><div style={{fontSize:12,color:CREAM}}>{sponsor}</div></div>}
@@ -1153,7 +1153,7 @@ function Tool10ReviewAccountability(){
       <div style={{background:S2,border:`1px solid ${BDR}`,padding:24,marginBottom:12}}>
         <SL>Review Rhythm</SL>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:12}}>
-          <div style={{background:S3,padding:16,borderTop:`3px solid ${GOLD}`}}>
+          <div style={{background:S3,padding:16,borderTop:`3px solid ${BRAND.mint}`}}>
             <div style={{...mono,fontSize:9,color:GOLD,letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:6}}>Cadence</div>
             <div style={{...serif,fontSize:18,fontWeight:700,color:T1,marginBottom:4}}>{cadenceLabel}</div>
             <div style={{fontSize:12,color:T3}}>{REVIEW_CADENCES.find(c=>c.id===cadence)?.desc}</div>
@@ -1326,7 +1326,7 @@ const RACI_OPTIONS = ["R","A","C","I","—"];
 
 const RACI_COLORS = {
   "R": { color: G_MID,  bg: "rgba(74,122,104,0.12)",  label: "Responsible" },
-  "A": { color: GOLD,   bg: "rgba(216,243,94,0.16)",   label: "Accountable" },
+  "A": { color: GOLD,   bg: "rgba(85,124,120,0.16)",   label: "Accountable" },
   "C": { color: AMBER,  bg: "rgba(200,154,42,0.12)",   label: "Consulted" },
   "I": { color: T4,     bg: "rgba(90,122,110,0.08)",   label: "Informed" },
   "—": { color: T4,     bg: "transparent",             label: "Not involved" },
@@ -1598,7 +1598,7 @@ Return ONLY valid JSON in this exact structure:
         {roles.filter(r => r.title).length >= 1 && processes.filter(p => p.name).length >= 1 && (
           <div>
             <SL>RACI Matrix</SL>
-            <div style={{ background: "rgba(216,243,94,0.10)", border: `1px solid rgba(14,105,100,0.2)`, padding: "10px 14px", marginBottom: 12, display: "flex", gap: 16, flexWrap: "wrap" }}>
+            <div style={{ background: "rgba(85,124,120,0.10)", border: `1px solid rgba(14,105,100,0.2)`, padding: "10px 14px", marginBottom: 12, display: "flex", gap: 16, flexWrap: "wrap" }}>
               {Object.entries(RACI_COLORS).filter(([k]) => k !== "—").map(([k, v]) => (
                 <span key={k} style={{ ...mono, fontSize: 10, color: v.color }}><strong>{k}</strong> — {v.label}</span>
               ))}
@@ -1918,18 +1918,14 @@ export default function SMRSuite({ user, onSignOut }){
     <style>{CSS}</style>
 
     {/* Header */}
-    <header style={{background:"rgba(255,255,255,0.94)",backdropFilter:"blur(14px)",padding:"0 24px",display:"flex",justifyContent:"space-between",alignItems:"stretch",position:"sticky",top:0,zIndex:200,flexShrink:0,minHeight:64,borderBottom:`1px solid ${BDR}`}}>
+    <header style={{background:"rgba(245,240,231,0.94)",backdropFilter:"blur(14px)",padding:"0 24px",display:"flex",justifyContent:"space-between",alignItems:"stretch",position:"sticky",top:0,zIndex:200,flexShrink:0,minHeight:64,borderBottom:`1px solid ${BDR}`}}>
       <div style={{display:"flex",alignItems:"center",gap:14}}>
-        <svg width="34" height="34" viewBox="0 0 512 512" fill="none">
-          <ellipse cx="280" cy="256" rx="200" ry="220" stroke="rgba(9,82,79,0.22)" strokeWidth="8" fill="none"/>
-          <ellipse cx="310" cy="256" rx="135" ry="220" stroke="rgba(9,82,79,0.22)" strokeWidth="8" fill="none"/>
-          <ellipse cx="270" cy="256" rx="75" ry="85" stroke="rgba(9,82,79,0.22)" strokeWidth="8" fill="none"/>
-          <circle cx="320" cy="256" r="42" fill={GOLD}/>
-          <circle cx="320" cy="256" r="20" fill="rgba(9,82,79,0.55)"/>
-          <line x1="160" y1="120" x2="185" y2="385" stroke="rgba(9,82,79,0.18)" strokeWidth="7"/>
+        <svg width="40" height="33" viewBox="0 0 86 70" fill="none" aria-hidden="true">
+          <path d="M37 10 L10 36 L39 64" stroke={T1} strokeWidth="3.2" strokeLinecap="square"/>
+          <path d="M49 10 L78 36 L50 64" stroke={BRAND.teal700} strokeWidth="3.2" strokeLinecap="square"/>
         </svg>
         <div>
-          <div style={{...serif,fontSize:15,fontWeight:700,color:G,lineHeight:1.1}}>Strategy Made Real</div>
+          <div style={{...serif,fontSize:20,fontWeight:600,color:T1,lineHeight:1}}>Strategy Made Real</div>
           <div style={{...mono,fontSize:8,color:T4,letterSpacing:"0.08em",textTransform:"uppercase",marginTop:2}}>Execution systems for leaders</div>
         </div>
       </div>
@@ -1938,8 +1934,8 @@ export default function SMRSuite({ user, onSignOut }){
           const isActive=t.id===activeTool;
           const isDone=TOOLS.findIndex(x=>x.id===activeTool)>i;
           return <button key={t.id} onClick={()=>setActiveTool(t.id)} style={{background:"none",border:"none",borderBottom:isActive?`3px solid ${GOLD}`:"3px solid transparent",borderTop:"3px solid transparent",padding:"0 10px",cursor:"pointer",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,transition:"all 0.15s",minWidth:40}}>
-            <div style={{...mono,fontSize:8,color:isActive?G:isDone?"rgba(9,82,79,0.54)":"rgba(9,82,79,0.28)",letterSpacing:"0.04em",transition:"color 0.15s"}}>{t.num}</div>
-            <div style={{width:4,height:4,borderRadius:"50%",background:isActive?GOLD:isDone?"rgba(9,82,79,0.35)":"rgba(9,82,79,0.15)",transition:"background 0.15s"}}/>
+            <div style={{...mono,fontSize:8,color:isActive?G:isDone?"rgba(46,90,87,0.54)":"rgba(46,90,87,0.28)",letterSpacing:"0.04em",transition:"color 0.15s"}}>{t.num}</div>
+            <div style={{width:4,height:4,borderRadius:"50%",background:isActive?GOLD:isDone?"rgba(46,90,87,0.35)":"rgba(46,90,87,0.15)",transition:"background 0.15s"}}/>
           </button>;
         })}
       </div>
@@ -1957,7 +1953,7 @@ export default function SMRSuite({ user, onSignOut }){
         <div style={{padding:"12px 0",flex:1}}>
           {["Think","Do","Enable"].map(group=>{
             const groupTools=TOOLS.filter(t=>t.group===group);
-            const groupColors={"Think":BRAND.mint,"Do":GOLD,"Enable":"rgba(255,255,255,0.72)"};
+            const groupColors={"Think":BRAND.mint,"Do":BRAND.mint,"Enable":"rgba(255,255,255,0.72)"};
             const groupDesc={"Think":"Clarify direction & priorities","Do":"Turn strategy into delivery","Enable":"People, accountability & follow-through"};
             return <div key={group} style={{marginBottom:4}}>
               <div style={{padding:"8px 16px 4px",display:"flex",alignItems:"center",gap:8}}>
@@ -1967,10 +1963,10 @@ export default function SMRSuite({ user, onSignOut }){
               {groupTools.map((t,i)=>{
                 const isActive=activeTool===t.id;
                 const isDone=TOOLS.findIndex(x=>x.id===activeTool)>TOOLS.findIndex(x=>x.id===t.id);
-                return <button key={t.id} onClick={()=>setActiveTool(t.id)} style={{width:"100%",background:isActive?"rgba(216,243,94,0.13)":"transparent",border:"none",borderLeft:isActive?`3px solid ${GOLD}`:"3px solid transparent",borderRadius:0,padding:"9px 16px 9px 20px",cursor:"pointer",textAlign:"left",transition:"all 0.15s",display:"block",position:"relative"}}>
+                return <button key={t.id} onClick={()=>setActiveTool(t.id)} style={{width:"100%",background:isActive?"rgba(85,124,120,0.13)":"transparent",border:"none",borderLeft:isActive?`3px solid ${BRAND.mint}`:"3px solid transparent",borderRadius:0,padding:"9px 16px 9px 20px",cursor:"pointer",textAlign:"left",transition:"all 0.15s",display:"block",position:"relative"}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:1}}>
-                    <div style={{...mono,fontSize:8,color:isActive?GOLD:isDone?"rgba(216,243,94,0.5)":"rgba(255,255,255,0.42)",letterSpacing:"0.06em"}}>{t.num}</div>
-                    {isDone&&<span style={{color:"rgba(216,243,94,0.5)",fontSize:9}}>✓</span>}
+                    <div style={{...mono,fontSize:8,color:isActive?BRAND.mint:isDone?"rgba(85,124,120,0.5)":"rgba(255,255,255,0.42)",letterSpacing:"0.06em"}}>{t.num}</div>
+                    {isDone&&<span style={{color:"rgba(85,124,120,0.5)",fontSize:9}}>✓</span>}
                   </div>
                   <div style={{fontSize:12,fontWeight:600,color:isActive?CREAM:"rgba(255,255,255,0.84)",lineHeight:1.3,marginBottom:2}}>{t.label}</div>
                   <div style={{fontSize:10,color:isActive?"rgba(255,255,255,0.66)":"rgba(255,255,255,0.46)",lineHeight:1.4}}>{t.sub}</div>
@@ -1988,8 +1984,8 @@ export default function SMRSuite({ user, onSignOut }){
       <div style={{flex:1,overflowY:"auto",background:S1}}>
         {/* Tool hero */}
         <div style={{padding:"24px 32px 18px",background:S1,borderBottom:`1px solid ${BDR}`,flexShrink:0}}>
-          <div style={{display:"inline-block",...mono,fontSize:9,color:T1,background:GOLD,borderRadius:8,padding:"3px 9px",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:10,fontWeight:600}}>Tool {active.num} · {active.phase}</div>
-          <div style={{...serif,fontSize:"clamp(22px,2.2vw,32px)",fontWeight:700,color:T1,lineHeight:1.1}}>{active.label}</div>
+          <div style={{display:"inline-block",...mono,fontSize:9,color:CREAM,background:G,borderRadius:999,padding:"3px 10px",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:10,fontWeight:600}}>Tool {active.num} · {active.phase}</div>
+          <div style={{...serif,fontSize:"clamp(28px,2.8vw,40px)",fontWeight:500,color:T1,lineHeight:1.1}}>{active.label}</div>
           <div style={{fontSize:14,color:T3,marginTop:4}}>{active.sub}</div>
         </div>
         {/* Tool body */}
