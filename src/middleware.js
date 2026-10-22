@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
+import { safeNext } from '@/lib/safeNext'
 
 export async function middleware(request) {
   let supabaseResponse = NextResponse.next({ request })
@@ -31,14 +32,18 @@ export async function middleware(request) {
   if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
     const url = request.nextUrl.clone()
     url.pathname = '/'
+    url.search = ''
+    url.searchParams.set('next', request.nextUrl.pathname + request.nextUrl.search)
     return NextResponse.redirect(url)
   }
 
   // Logged in + on login page → redirect to dashboard
   if (user && request.nextUrl.pathname === '/') {
     const url = request.nextUrl.clone()
+    const next = safeNext(request.nextUrl.searchParams.get('next'))
+    url.search = ''
     url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
+    return NextResponse.redirect(next ? new URL(next, request.url) : url)
   }
 
   return supabaseResponse

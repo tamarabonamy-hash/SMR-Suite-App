@@ -47,6 +47,26 @@ export const emptyPlan = () => ({
   rhythm: { weeklyDay: 'Monday', monthlyWeek: 'First', quarterly: 'Last two weeks of the quarter' },
 })
 
+// Fills gaps so plans saved by older versions (or empty new ones) always have every field.
+export function normalisePlan(data) {
+  const base = emptyPlan()
+  const p = { ...base, ...(data || {}) }
+  for (const k of ['notDoing', 'people', 'priorities', 'goals', 'actions', 'reviews']) if (!Array.isArray(p[k])) p[k] = []
+  p.rhythm = { ...base.rhythm, ...(p.rhythm || {}) }
+  return p
+}
+
+export const isPlanEmpty = p => !p.org && !p.purpose && !p.priorities.length && !p.people.length
+
+// True when the item's owner is the person whose email is the signed-in user's.
+export function ownsItem(plan, item, email) {
+  if (!email || !item?.ownerId) return false
+  const person = plan.people.find(p => p.id === item.ownerId)
+  return !!person?.email && person.email.trim().toLowerCase() === email
+}
+
+export const personForEmail = (plan, email) => plan.people.find(p => p.email && p.email.trim().toLowerCase() === email)
+
 export const uid = () => Math.random().toString(36).slice(2, 10)
 export const today = () => new Date().toISOString().slice(0, 10)
 export const daysFromNow = n => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10)
