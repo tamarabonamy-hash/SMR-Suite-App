@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { BRAND, globalBrandCSS, mono, sans } from '@/lib/brand'
+import { BRAND, globalBrandCSS, mono, sans, serif as serifFont } from '@/lib/brand'
 
 const G     = BRAND.teal800
 const GOLD  = BRAND.lime
@@ -15,7 +15,7 @@ const T4    = BRAND.muted
 const BDR   = BRAND.line
 const RED   = BRAND.error
 const CREAM = BRAND.white
-const serif = sans
+const serif = serifFont
 
 const CSS = globalBrandCSS
 
@@ -72,17 +72,13 @@ export default function LoginPage() {
       <div style={{ minHeight:'100vh', background:S1, display:'flex', flexDirection:'column' }}>
 
         {/* Header */}
-        <header style={{ background:'rgba(255,255,255,0.94)', backdropFilter:'blur(14px)', padding:'0 32px', display:'flex', alignItems:'center', gap:14, minHeight:72, borderBottom:`1px solid ${BDR}` }}>
-          <svg width="34" height="34" viewBox="0 0 512 512" fill="none">
-            <ellipse cx="280" cy="256" rx="200" ry="220" stroke="rgba(9,82,79,0.22)" strokeWidth="8" fill="none"/>
-            <ellipse cx="310" cy="256" rx="135" ry="220" stroke="rgba(9,82,79,0.22)" strokeWidth="8" fill="none"/>
-            <ellipse cx="270" cy="256" rx="75"  ry="85"  stroke="rgba(9,82,79,0.22)" strokeWidth="8" fill="none"/>
-            <circle cx="320" cy="256" r="42" fill={GOLD}/>
-            <circle cx="320" cy="256" r="20" fill="rgba(9,82,79,0.55)"/>
-            <line x1="160" y1="120" x2="185" y2="385" stroke="rgba(9,82,79,0.18)" strokeWidth="7"/>
-          </svg>
+        <header style={{ background:'rgba(245,240,231,0.94)', backdropFilter:'blur(14px)', padding:'0 32px', display:'flex', alignItems:'center', gap:14, minHeight:72, borderBottom:`1px solid ${BDR}` }}>
+          <svg width="40" height="33" viewBox="0 0 86 70" fill="none" aria-hidden="true">
+          <path d="M37 10 L10 36 L39 64" stroke={T1} strokeWidth="3.2" strokeLinecap="square"/>
+          <path d="M49 10 L78 36 L50 64" stroke={BRAND.teal700} strokeWidth="3.2" strokeLinecap="square"/>
+        </svg>
           <div>
-            <div style={{ ...serif, fontSize:15, fontWeight:700, color:G, lineHeight:1.1 }}>
+            <div style={{ ...serif, fontSize:20, fontWeight:600, color:T1, lineHeight:1 }}>
               Strategy Made Real
             </div>
             <div style={{ ...mono, fontSize:9, color:T4, letterSpacing:'0.08em', textTransform:'uppercase', marginTop:2 }}>
@@ -96,7 +92,7 @@ export default function LoginPage() {
           <div style={{ width:'100%', maxWidth:420 }}>
 
             <div style={{ marginBottom:32, textAlign:'center' }}>
-              <div style={{ ...serif, fontSize:28, fontWeight:700, color:T1, marginBottom:8 }}>
+              <div style={{ ...serif, fontSize:40, fontWeight:500, color:T1, marginBottom:8, lineHeight:1.05 }}>
                 {mode==='login' ? 'Sign in' : mode==='signup' ? 'Create account' : 'Reset password'}
               </div>
               <div style={{ fontSize:13, color:T4 }}>
@@ -104,7 +100,7 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <div style={{ background:S2, border:`1px solid ${BDR}`, borderRadius:8, boxShadow:'0 20px 42px rgba(6,56,53,0.08)', padding:32 }}>
+            <div style={{ background:S2, border:`1px solid ${BDR}`, borderRadius:8, boxShadow:'0 20px 42px rgba(23,23,23,0.08)', padding:32 }}>
               <div style={{ marginBottom:16 }}>
                 <label style={{ ...mono, fontSize:9, color:T4, letterSpacing:'0.08em', textTransform:'uppercase', display:'block', marginBottom:6 }}>Email</label>
                 <input type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" onKeyDown={e=>e.key==='Enter'&&handleSubmit()}/>
@@ -124,7 +120,7 @@ export default function LoginPage() {
               )}
 
               {message && (
-                <div style={{ background:'rgba(9,82,79,0.06)', border:`1px solid ${BDR}`, borderRadius:8, padding:'10px 14px', marginBottom:16, fontSize:12, color:T3 }}>
+                <div style={{ background:'rgba(46,90,87,0.06)', border:`1px solid ${BDR}`, borderRadius:8, padding:'10px 14px', marginBottom:16, fontSize:12, color:T3 }}>
                   {message}
                 </div>
               )}
@@ -132,7 +128,7 @@ export default function LoginPage() {
               <button
                 onClick={handleSubmit}
                 disabled={loading || !email || (mode!=='reset' && !password)}
-                style={{ width:'100%', background:(loading||!email)?'rgba(216,243,94,0.34)':GOLD, color:T1, border:'1px solid transparent', borderRadius:8, padding:'13px 0', ...mono, fontSize:11, letterSpacing:'0.08em', textTransform:'uppercase', cursor:loading?'not-allowed':'pointer', fontWeight:700 }}
+                style={{ width:'100%', background:(loading||!email)?'rgba(46,90,87,0.34)':G, color:CREAM, border:'1px solid transparent', borderRadius:999, padding:'13px 0', ...mono, fontSize:11, letterSpacing:'0.08em', textTransform:'uppercase', cursor:loading?'not-allowed':'pointer', fontWeight:700 }}
               >
                 {loading ? 'Please wait...' : mode==='login' ? 'Sign In →' : mode==='signup' ? 'Create Account →' : 'Send Reset Link →'}
               </button>

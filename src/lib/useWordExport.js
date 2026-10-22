@@ -11,24 +11,36 @@ import { saveAs } from 'file-saver';
 
 // ─── BRAND TOKENS ─────────────────────────────────────────────────────────────
 const C = {
-  GREEN:  "09524F",
-  GOLD:   "D8F35E",
-  CREAM:  "F5F8F6",
-  S2:     "FFFFFF",
-  S3:     "EEF4F1",
-  T1:     "10211F",
-  T2:     "37534F",
-  T3:     "34524E",
-  T4:     "667A76",
+  GREEN:  "2E5A57",  // deep teal
+  GOLD:   "557C78",  // teal accent
+  MINT:   "A9C3BF",  // light teal, for text on deep teal
+  CREAM:  "F5F0E7",
+  S2:     "FCFAF5",
+  S3:     "EEE7DA",
+  T1:     "171717",
+  T2:     "2B2B2B",
+  T3:     "3D3A36",
+  T4:     "6B6760",
   RED:    "B94040",
   AMBER:  "9A6A00",
-  GMID:   "0E6964",
+  GMID:   "557C78",
   WHITE:  "FFFFFF",
-  LIGHT:  "F5F8F6",
+  LIGHT:  "F5F0E7",
 };
 
+// Word only accepts 6-digit hex, so "colour + alpha" is blended onto white instead.
+function tint(hex, alpha) {
+  const a = parseInt(alpha, 16) / 255;
+  return [0, 2, 4].map(i => {
+    const c = parseInt(hex.slice(i, i + 2), 16);
+    return Math.round(255 - (255 - c) * a).toString(16).padStart(2, '0');
+  }).join('').toUpperCase();
+}
+
+const FONT = { serif: "Cormorant Garamond", sans: "IBM Plex Sans", mono: "IBM Plex Mono" };
+
 // ─── SHARED HELPERS ────────────────────────────────────────────────────────────
-const BORDER = { style: BorderStyle.SINGLE, size: 1, color: "DDDDDD" };
+const BORDER = { style: BorderStyle.SINGLE, size: 1, color: "DDD6C8" };
 const BORDERS = { top: BORDER, bottom: BORDER, left: BORDER, right: BORDER };
 const NO_BORDER = { style: BorderStyle.NONE, size: 0, color: "FFFFFF" };
 const NO_BORDERS = { top: NO_BORDER, bottom: NO_BORDER, left: NO_BORDER, right: NO_BORDER };
@@ -40,7 +52,7 @@ const CONTENT_WIDTH = 9360; // US Letter, 1" margins
 function run(text, opts = {}) {
   return new TextRun({
     text: String(text || ''),
-    font: "IBM Plex Sans",
+    font: opts.font || FONT.sans,
     size: opts.size || 20,
     bold: opts.bold || false,
     color: opts.color || C.T1,
@@ -76,7 +88,7 @@ function rule(color = C.GOLD) {
 function sectionLabel(text) {
   return new Paragraph({
     spacing: { before: 200, after: 80 },
-    children: [run(text, { size: 17, bold: true, color: C.T4, caps: true })],
+    children: [run(text, { font: FONT.mono, size: 16, color: C.T4, caps: true })],
   });
 }
 
@@ -84,7 +96,8 @@ function heading(text, level = 1) {
   return new Paragraph({
     spacing: { before: level === 1 ? 240 : 160, after: 100 },
     children: [run(text, {
-      size: level === 1 ? 28 : level === 2 ? 22 : 20,
+      font: FONT.serif,
+      size: level === 1 ? 34 : level === 2 ? 26 : 22,
       bold: true,
       color: level === 1 ? C.GREEN : C.T1,
     })],
@@ -125,13 +138,13 @@ function headerBlock(toolNum, toolLabel, title, subtitle, date) {
           margins: { top: 240, bottom: 240, left: 280, right: 280 },
           children: [
             new Paragraph({ spacing: { before: 0, after: 40 }, children: [
-              run(`Tool ${toolNum}  ·  ${toolLabel}`, { size: 16, color: C.GOLD, caps: true }),
+              run(`Tool ${toolNum}  ·  ${toolLabel}`, { font: FONT.mono, size: 16, color: C.MINT, caps: true }),
             ]}),
             new Paragraph({ spacing: { before: 0, after: 40 }, children: [
-              run(title, { size: 30, bold: true, color: C.WHITE }),
+              run(title, { font: FONT.serif, size: 40, bold: true, color: C.CREAM }),
             ]}),
             subtitle ? new Paragraph({ spacing: { before: 0, after: 0 }, children: [
-              run(subtitle, { size: 18, color: "CCCCCC", italic: true }),
+              run(subtitle, { size: 18, color: "D6E0DD", italic: true }),
             ]}) : blank(0),
           ],
         }),
@@ -168,7 +181,7 @@ function scoreBar(label, score, max = 5, color = C.GREEN) {
     children: [
       run(`${label}`, { size: 18, bold: true, color: C.T1 }),
       run(`  ${score}/${max}  `, { size: 18, color }),
-      run(bar, { size: 14, color: color + '88' }),
+      run(bar, { size: 14, color: tint(color, '88') }),
     ],
   });
 }
@@ -228,7 +241,7 @@ export async function exportDiagnostic({ scores, dims, slabels, risks, cautions,
           columnWidths: [2400, 6960],
           rows: [new TableRow({ children: [
             cell([
-              para(run(avg.toFixed(1), { size: 52, bold: true, color: C.GOLD }), { after: 40 }),
+              para(run(avg.toFixed(1), { font: FONT.serif, size: 64, bold: true, color: C.GOLD }), { after: 40 }),
               para(run(`/ 5.0  —  ${ml}`, { size: 20, color: C.T3 }), { after: 0 }),
             ], { borders: NO_BORDERS, width: 2400 }),
             cell([
@@ -269,7 +282,7 @@ export async function exportDiagnostic({ scores, dims, slabels, risks, cautions,
               run(`${dim.num}  ${dim.label}`, { size: 19, bold: true, color: C.T1 }),
               run(`     ${s > 0 ? s + ' — ' + (slabels[s] || '') : 'Not scored'}`, { size: 18, color: col }),
             ],
-            border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: "EEEEEE" } },
+            border: { bottom: { style: BorderStyle.SINGLE, size: 1, color: "E7E0D3" } },
           });
         }),
 
@@ -347,7 +360,7 @@ export async function exportPrioritisation({ initiatives }) {
                 cell(para(run(init.name, { size: 18, bold: true }), { after: 0 }), { borders: BORDERS, width: colWidths[0], fill: idx % 2 === 0 ? C.WHITE : C.LIGHT, pad: 90 }),
                 cell(para(run(init.owner || '—', { size: 17 }), { after: 0 }), { borders: BORDERS, width: colWidths[1], fill: idx % 2 === 0 ? C.WHITE : C.LIGHT, pad: 90 }),
                 cell(para(run(init.weightedScore.toFixed(2), { size: 18, bold: true, color: tc }), { after: 0 }), { borders: BORDERS, width: colWidths[2], fill: idx % 2 === 0 ? C.WHITE : C.LIGHT, pad: 90 }),
-                cell(para(run(tier, { size: 17, bold: true, color: tc }), { after: 0 }), { borders: BORDERS, width: colWidths[3], fill: tc + '15', pad: 90 }),
+                cell(para(run(tier, { size: 17, bold: true, color: tc }), { after: 0 }), { borders: BORDERS, width: colWidths[3], fill: tint(tc, '15'), pad: 90 }),
                 cell(para(run('—', { size: 17, color: C.T4 }), { after: 0 }), { borders: BORDERS, width: colWidths[4], fill: idx % 2 === 0 ? C.WHITE : C.LIGHT, pad: 90 }),
               ]});
             }),
@@ -370,7 +383,7 @@ export async function exportPrioritisation({ initiatives }) {
                   para(run(tier, { size: 20, bold: true, color: tc }), { after: 60 }),
                   para(run(String(items.length) + ' initiative' + (items.length !== 1 ? 's' : ''), { size: 36, bold: true, color: tc }), { after: 80 }),
                   ...items.map(i => para(run(i.name, { size: 17, color: C.T3 }), { after: 30 })),
-                ], { borders: BORDERS, width: 2340, fill: tc + '10', pad: 140 });
+                ], { borders: BORDERS, width: 2340, fill: tint(tc, '10'), pad: 140 });
               }),
             ]}),
           ],
@@ -420,9 +433,9 @@ export async function exportDecisionStack({ title, names, scores, ws, winner, di
           columnWidths: [CONTENT_WIDTH],
           rows: [new TableRow({ children: [
             cell([
-              para(run('Recommended Option', { size: 16, color: C.GOLD, caps: true }), { after: 40 }),
-              para(run(winnerName, { size: 28, bold: true, color: C.WHITE }), { after: 40 }),
-              para(run(`Weighted score: ${ws[winner].toFixed(2)} / 5.0`, { size: 18, color: "CCCCCC" }), { after: 0 }),
+              para(run('Recommended Option', { font: FONT.mono, size: 16, color: C.MINT, caps: true }), { after: 40 }),
+              para(run(winnerName, { font: FONT.serif, size: 34, bold: true, color: C.CREAM }), { after: 40 }),
+              para(run(`Weighted score: ${ws[winner].toFixed(2)} / 5.0`, { size: 18, color: "D6E0DD" }), { after: 0 }),
             ], { borders: NO_BORDERS, width: CONTENT_WIDTH, fill: C.GREEN, pad: 200, padH: 240 }),
           ]})]
         }),
@@ -450,7 +463,7 @@ export async function exportDecisionStack({ title, names, scores, ws, winner, di
               ...opts.map((o, i) => {
                 const isWin = o === winner;
                 return cell(para(run(ws[o].toFixed(2), { size: 20, bold: true, color: isWin ? C.GREEN : C.T3 }), { after: 0, align: AlignmentType.CENTER }),
-                  { borders: BORDERS, width: 2253 + (i === 2 ? 1 : 0), fill: isWin ? C.GOLD + '20' : "F0EDE8", pad: 100 });
+                  { borders: BORDERS, width: 2253 + (i === 2 ? 1 : 0), fill: isWin ? tint(C.GOLD, '20') : "F0EDE8", pad: 100 });
               }),
             ]}),
           ],
@@ -503,13 +516,13 @@ export async function exportRoleAnalyser({ form, result }) {
           columnWidths: [CONTENT_WIDTH],
           rows: [new TableRow({ children: [
             cell([
-              para(run('Role Success Profile', { size: 16, color: C.GOLD, caps: true }), { after: 40 }),
+              para(run('Role Success Profile', { font: FONT.mono, size: 16, color: C.MINT, caps: true }), { after: 40 }),
               para(run(form.role || 'Role Title', { size: 34, bold: true, color: C.WHITE }), { after: 40 }),
-              para(run(form.org || '', { size: 20, color: "CCCCCC" }), { after: 40 }),
+              para(run(form.org || '', { size: 20, color: "D6E0DD" }), { after: 40 }),
               para([
                 ...[form.level, form.func, form.location].filter(Boolean).flatMap((v, i, a) => [
-                  run(v, { size: 17, color: "AAAAAA" }),
-                  ...(i < a.length - 1 ? [run('  ·  ', { size: 17, color: "666666" })] : []),
+                  run(v, { size: 17, color: "D6E0DD" }),
+                  ...(i < a.length - 1 ? [run('  ·  ', { size: 17, color: C.MINT })] : []),
                 ]),
               ], { after: 0 }),
             ], { borders: NO_BORDERS, width: CONTENT_WIDTH, fill: C.GREEN, pad: 280, padH: 280 }),
@@ -553,7 +566,7 @@ export async function exportRoleAnalyser({ form, result }) {
             width: { size: CONTENT_WIDTH, type: WidthType.DXA },
             columnWidths: Array(Math.min(pillars.length, 3)).fill(Math.floor(CONTENT_WIDTH / Math.min(pillars.length, 3))),
             rows: [new TableRow({ children: pillars.slice(0, 3).map((p, i) => cell([
-              para(run(String(i + 1).padStart(2, '0'), { size: 16, color: C.GOLD }), { after: 30 }),
+              para(run(String(i + 1).padStart(2, '0'), { size: 16, font: FONT.mono, color: C.MINT }), { after: 30 }),
               para(run(p, { size: 18, bold: true, color: C.WHITE }), { after: 0 }),
             ], { borders: NO_BORDERS, width: Math.floor(CONTENT_WIDTH / 3), fill: C.GREEN, pad: 160, padH: 180 })) })],
           }),
@@ -562,7 +575,7 @@ export async function exportRoleAnalyser({ form, result }) {
             width: { size: CONTENT_WIDTH, type: WidthType.DXA },
             columnWidths: Array(pillars.length - 3).fill(Math.floor(CONTENT_WIDTH / (pillars.length - 3))),
             rows: [new TableRow({ children: pillars.slice(3).map((p, i) => cell([
-              para(run(String(i + 4).padStart(2, '0'), { size: 16, color: C.GOLD }), { after: 30 }),
+              para(run(String(i + 4).padStart(2, '0'), { size: 16, font: FONT.mono, color: C.MINT }), { after: 30 }),
               para(run(p, { size: 18, bold: true, color: C.WHITE }), { after: 0 }),
             ], { borders: NO_BORDERS, width: Math.floor(CONTENT_WIDTH / (pillars.length - 3)), fill: C.GREEN, pad: 160, padH: 180 })) })],
           })] : []),
@@ -666,7 +679,7 @@ export async function exportCapability({ domains, scores, imp, notes }) {
           columnWidths: [1872, 1872, 1872, 1872, 1872],
           rows: [new TableRow({ children: [
             ...[[critGaps.length, 'Critical Gaps', C.RED], [sigGaps.length, 'Sig. Gaps', 'C0622A'], [partial.length, 'Partial', C.AMBER], [capable.length, 'Capable', C.GMID], [strong.length, 'Strong', '2C6B52']].map(([n, l, col]) =>
-              cell([para(run(String(n), { size: 36, bold: true, color: col }), { after: 30 }), para(run(l, { size: 16, color: C.T4 }), { after: 0 })], { borders: BORDERS, width: 1872, fill: col + '12', pad: 120 })
+              cell([para(run(String(n), { size: 36, bold: true, color: col }), { after: 30 }), para(run(l, { size: 16, color: C.T4 }), { after: 0 })], { borders: BORDERS, width: 1872, fill: tint(col, '12'), pad: 120 })
             ),
           ]})]
         }),
@@ -690,7 +703,7 @@ export async function exportCapability({ domains, scores, imp, notes }) {
                 cell([para(run(d.label, { size: 18, bold: true }), { after: 20 }), para(run(d.sub, { size: 16, color: C.T4 }), { after: 0 })], { borders: BORDERS, width: 3200, fill: i % 2 === 0 ? C.WHITE : C.LIGHT, pad: 90 }),
                 cell(para(run(s > 0 ? String(s) : '—', { size: 22, bold: true, color: col }), { after: 0, align: AlignmentType.CENTER }), { borders: BORDERS, width: 1400, fill: i % 2 === 0 ? C.WHITE : C.LIGHT, pad: 90 }),
                 cell(para(run(notes[d.id] || '—', { size: 17, color: C.T3, italic: !notes[d.id] }), { after: 0 }), { borders: BORDERS, width: 3160, fill: i % 2 === 0 ? C.WHITE : C.LIGHT, pad: 90 }),
-                cell(para(run(capLabel(s), { size: 16, bold: true, color: col }), { after: 0 }), { borders: BORDERS, width: 1600, fill: col + '12', pad: 90 }),
+                cell(para(run(capLabel(s), { size: 16, bold: true, color: col }), { after: 0 }), { borders: BORDERS, width: 1600, fill: tint(col, '12'), pad: 90 }),
               ]});
             }),
           ],
@@ -860,7 +873,7 @@ export async function exportChange({ changeName, changeType, groups, scope, adka
             rows: [new TableRow({ children: [cell([
               para(run('Barrier Point Identified', { size: 16, color: C.RED, caps: true }), { after: 40 }),
               para(run(weakest.label, { size: 24, bold: true, color: C.WHITE }), { after: 30 }),
-              para(run('This is your most critical gap. Address it first — all other elements depend on it.', { size: 18, color: "CCCCCC" }), { after: 0 }),
+              para(run('This is your most critical gap. Address it first — all other elements depend on it.', { size: 18, color: "D6E0DD" }), { after: 0 }),
             ], { borders: NO_BORDERS, width: CONTENT_WIDTH, fill: C.RED, pad: 180, padH: 220 })]})]
           }),
           blank(),
@@ -880,9 +893,9 @@ export async function exportChange({ changeName, changeType, groups, scope, adka
               const isBarrier = weakest && el.id === weakest.id;
               const actions = (interventions[el.id] || []).slice(0, s <= 2 ? 3 : 2);
               return new TableRow({ children: [
-                cell([para(run(el.label, { size: 18, bold: true, color: isBarrier ? C.RED : C.T1 }), { after: isBarrier ? 30 : 0 }), ...(isBarrier ? [para(run('Barrier Point', { size: 14, color: C.RED }), { after: 0 })] : [])], { borders: BORDERS, width: 2600, fill: isBarrier ? C.RED + '10' : i % 2 === 0 ? C.WHITE : C.LIGHT, pad: 90 }),
+                cell([para(run(el.label, { size: 18, bold: true, color: isBarrier ? C.RED : C.T1 }), { after: isBarrier ? 30 : 0 }), ...(isBarrier ? [para(run('Barrier Point', { size: 14, color: C.RED }), { after: 0 })] : [])], { borders: BORDERS, width: 2600, fill: isBarrier ? tint(C.RED, '10') : i % 2 === 0 ? C.WHITE : C.LIGHT, pad: 90 }),
                 cell(para(run(s > 0 ? String(s) : '—', { size: 22, bold: true, color: col }), { after: 0, align: AlignmentType.CENTER }), { borders: BORDERS, width: 1400, fill: i % 2 === 0 ? C.WHITE : C.LIGHT, pad: 90 }),
-                cell(para(run(adkarLabel(s), { size: 16, color: col }), { after: 0 }), { borders: BORDERS, width: 1400, fill: col + '12', pad: 90 }),
+                cell(para(run(adkarLabel(s), { size: 16, color: col }), { after: 0 }), { borders: BORDERS, width: 1400, fill: tint(col, '12'), pad: 90 }),
                 cell(actions.map(a => para(run('\u2013  ' + a, { size: 16, color: C.T3 }), { after: 30 })), { borders: BORDERS, width: 3960, fill: i % 2 === 0 ? C.WHITE : C.LIGHT, pad: 90 }),
               ]});
             }),
@@ -955,7 +968,7 @@ export async function exportAccountability({ programName, sponsor, reviewForum, 
                 cell(para(run(c.owner, { size: 17, color: C.T2, bold: true }), { after: 0 }), { borders: BORDERS, width: colWidths[1], fill: i % 2 === 0 ? C.WHITE : C.LIGHT, pad: 90 }),
                 cell(para(run(c.dueDate ? new Date(c.dueDate).toLocaleDateString('en-AU') : '—', { size: 16, color: C.T3 }), { after: 0 }), { borders: BORDERS, width: colWidths[2], fill: i % 2 === 0 ? C.WHITE : C.LIGHT, pad: 90 }),
                 cell(para(run((c.evidenceTypes || []).join(', ') || '—', { size: 15, color: C.T4, italic: true }), { after: 0 }), { borders: BORDERS, width: colWidths[3], fill: i % 2 === 0 ? C.WHITE : C.LIGHT, pad: 90 }),
-                cell(para(run(SLIP_LABELS[c.slipResponse] || '—', { size: 15, bold: true, color: sc }), { after: 0 }), { borders: BORDERS, width: colWidths[4], fill: sc + '12', pad: 90 }),
+                cell(para(run(SLIP_LABELS[c.slipResponse] || '—', { size: 15, bold: true, color: sc }), { after: 0 }), { borders: BORDERS, width: colWidths[4], fill: tint(sc, '12'), pad: 90 }),
               ]});
             }),
           ],
