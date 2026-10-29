@@ -2,16 +2,18 @@
 
 import { mono, serif } from '@/lib/brand'
 import { WEEKDAYS, REVIEW_TYPES, childrenOf, personName, topGoals, uid } from './model'
-import { Btn, C, Card, ChipList, Empty, Field, Label, NextBar, PersonSelect, RemoveBtn, SectionTitle, StageHeader } from './ui'
+import { Btn, C, Card, ChipList, Empty, Field, Guard, Label, NextBar, PersonSelect, RemoveBtn, SectionTitle, StageHeader } from './ui'
+import { TeamAccess } from './TeamAccess'
 
 // ─── 01 CLARIFY ───────────────────────────────────────────────────────────────
-export function Clarify({ plan, update, go }) {
+export function Clarify({ plan, update, go, readOnly, api, org, role }) {
   const n = plan.priorities.length
   const setField = key => e => { const v = e.target.value; update(p => { p[key] = v }) }
   const setPriority = (id, key) => e => { const v = e.target.value; update(p => { p.priorities.find(x => x.id === id)[key] = v }) }
 
   return <>
     <StageHeader stageId="clarify" tip="Fit the strategy on one page: a purpose, a 3-year ambition, and 3–5 priorities for this year, each with a measurable definition of success. If it doesn't fit on a page, people won't remember it." />
+    <Guard readOnly={readOnly}>
 
     <Card>
       <SectionTitle title="Strategy on a page" />
@@ -56,24 +58,28 @@ export function Clarify({ plan, update, go }) {
         onRemove={i => update(p => { p.notDoing.splice(i, 1) })} />
     </Card>
 
+    </Guard>
     <NextBar onBack={() => go('home')} onNext={() => go('organise')} nextLabel="Organise" />
   </>
 }
 
 // ─── 02 ORGANISE ──────────────────────────────────────────────────────────────
-export function Organise({ plan, update, go }) {
+export function Organise({ plan, update, go, readOnly, api, org, role }) {
   const top = topGoals(plan)
   const setPerson = (id, key) => e => { const v = e.target.value; update(p => { p.people.find(x => x.id === id)[key] = v }) }
 
   return <>
     <StageHeader stageId="organise" tip="Give every priority exactly one owner. Shared ownership usually means nobody owns it. Then fix the meeting rhythm in advance, so progress gets reviewed on a schedule rather than chased." />
+    {!readOnly && <TeamAccess api={api} org={org} role={role} plan={plan} />}
+    <Guard readOnly={readOnly}>
 
     <Card>
-      <SectionTitle title="Leadership team" sub="The people who will own priorities and goals." />
+      <SectionTitle title="Leadership team" sub="The people who own priorities and goals. Use the email they sign in with, so they can update their own goals." />
       {plan.people.map(per => (
-        <div key={per.id} style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10 }}>
-          <input value={per.name} onChange={setPerson(per.id, 'name')} placeholder="Name" />
-          <input value={per.role} onChange={setPerson(per.id, 'role')} placeholder="Role" />
+        <div key={per.id} style={{ display: 'flex', gap: 12, alignItems: 'center', marginBottom: 10, flexWrap: 'wrap' }}>
+          <input style={{ flex: '1 1 160px' }} value={per.name} onChange={setPerson(per.id, 'name')} placeholder="Name" />
+          <input style={{ flex: '1 1 160px' }} value={per.role} onChange={setPerson(per.id, 'role')} placeholder="Role" />
+          <input style={{ flex: '1.4 1 220px' }} type="email" value={per.email || ''} onChange={setPerson(per.id, 'email')} placeholder="Sign-in email" />
           <RemoveBtn label="Remove person" onClick={() => update(p => {
             p.people = p.people.filter(x => x.id !== per.id)
             p.priorities.forEach(x => { if (x.ownerId === per.id) x.ownerId = null })
@@ -82,7 +88,7 @@ export function Organise({ plan, update, go }) {
           })} />
         </div>
       ))}
-      <Btn kind="secondary" small onClick={() => update(p => { p.people.push({ id: uid(), name: '', role: '' }) })}>+ Add person</Btn>
+      <Btn kind="secondary" small onClick={() => update(p => { p.people.push({ id: uid(), name: '', role: '', email: '' }) })}>+ Add person</Btn>
     </Card>
 
     <Card>
@@ -140,6 +146,7 @@ export function Organise({ plan, update, go }) {
       </div>
     </Card>
 
+    </Guard>
     <NextBar onBack={() => go('clarify')} onNext={() => go('cascade')} nextLabel="Cascade" />
   </>
 }
@@ -159,11 +166,11 @@ function RhythmCard({ type, children }) {
 }
 
 // ─── 03 CASCADE ───────────────────────────────────────────────────────────────
-export function Cascade({ plan, update, go }) {
+export function Cascade({ plan, update, go, readOnly, api, org, role }) {
   if (!plan.priorities.length) {
     return <>
       <StageHeader stageId="cascade" />
-      <Empty title="Nothing to cascade yet" action={<Btn onClick={() => go('clarify')}>Go to Clarify</Btn>}>Set this year's priorities first, then break each one into quarterly goals here.</Empty>
+      <Empty title="Nothing to cascade yet" action={readOnly ? null : <Btn onClick={() => go('clarify')}>Go to Clarify</Btn>}>Set this year's priorities first, then break each one into quarterly goals here.</Empty>
     </>
   }
 
@@ -175,6 +182,7 @@ export function Cascade({ plan, update, go }) {
 
   return <>
     <StageHeader stageId="cascade" tip="Break each priority into 1–3 goals for the quarter, each owned by one executive. Then break each goal into team commitments. A good goal states a measure, where you are now, where you'll be, and by when." />
+    <Guard readOnly={readOnly}>
 
     {plan.priorities.map((pr, i) => {
       const goals = topGoals(plan).filter(g => g.priorityId === pr.id)
@@ -228,6 +236,7 @@ export function Cascade({ plan, update, go }) {
       )
     })}
 
+    </Guard>
     <NextBar onBack={() => go('organise')} onNext={() => go('track')} nextLabel="Track" />
   </>
 }

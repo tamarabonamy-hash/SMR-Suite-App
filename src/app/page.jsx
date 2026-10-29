@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { BRAND, globalBrandCSS, mono, sans, serif as serifFont } from '@/lib/brand'
+import { safeNext } from '@/lib/safeNext'
 
 const G     = BRAND.teal800
 const GOLD  = BRAND.lime
@@ -33,7 +34,7 @@ export default function LoginPage() {
     setLoading(true); setError(''); setMessage('')
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) { setError(error.message); setLoading(false); return }
-    router.push('/dashboard')
+    router.push(nextPath())
     router.refresh()
   }
 
@@ -41,7 +42,7 @@ export default function LoginPage() {
     setLoading(true); setError(''); setMessage('')
     const { error } = await supabase.auth.signUp({
       email, password,
-      options: { emailRedirectTo: `${window.location.origin}/dashboard` }
+      options: { emailRedirectTo: `${window.location.origin}${nextPath()}` }
     })
     if (error) { setError(error.message); setLoading(false); return }
     setMessage('Check your email to confirm your account.')
@@ -63,6 +64,9 @@ export default function LoginPage() {
     if (mode === 'signup') handleSignup()
     if (mode === 'reset')  handleReset()
   }
+
+  // Where to land after signing in: the page they were sent from (e.g. an invite link), else the toolkit.
+  const nextPath = () => safeNext(new URLSearchParams(window.location.search).get('next')) || '/dashboard'
 
   function switchMode(m) { setMode(m); setError(''); setMessage('') }
 

@@ -6,8 +6,8 @@ import { REVIEW_TYPES, STATUS, childrenOf, daysSince, fmtDate, isStale, lastUpda
 import { Btn, C, Card, Empty, Field, Label, NextBar, PersonSelect, ProgressBar, SectionTitle, StageHeader, StatusPicker, StatusPill, toneColor } from './ui'
 
 // ─── 04 TRACK ─────────────────────────────────────────────────────────────────
-export function Track({ plan, update, go }) {
-  const [owner, setOwner] = useState('')
+export function Track({ plan, go, act, readOnly, myPerson }) {
+  const [owner, setOwner] = useState(readOnly && myPerson ? myPerson.id : '')
   const [open, setOpen] = useState(null)
   const all = topGoals(plan)
 
@@ -44,7 +44,7 @@ export function Track({ plan, update, go }) {
             <div style={{ ...serif, fontSize: 20, fontWeight: 600, color: C.ink }}>{pr.title}</div>
           </div>
           {rows.map(g => (
-            <GoalRow key={g.id} plan={plan} g={g} update={update} open={open === g.id} onToggle={() => setOpen(open === g.id ? null : g.id)} />
+            <GoalRow key={g.id} plan={plan} g={g} act={act} open={open === g.id} onToggle={() => setOpen(open === g.id ? null : g.id)} />
           ))}
         </Card>
       )
@@ -72,19 +72,15 @@ function ScoreSummary({ goals }) {
   )
 }
 
-function GoalRow({ plan, g, update, open, onToggle }) {
+function GoalRow({ plan, g, act, open, onToggle }) {
+  const canUpdate = act.canUpdate(g)
   const [draft, setDraft] = useState({ status: g.status, current: g.current, note: '' })
   const pct = progressOf(g)
   const since = daysSince(lastUpdate(g))
   const kids = childrenOf(plan, g.id)
 
   const save = () => {
-    update(p => {
-      const goal = p.goals.find(x => x.id === g.id)
-      goal.status = draft.status
-      goal.current = draft.current
-      goal.updates = [...(goal.updates || []), { date: today(), status: draft.status, current: draft.current, note: draft.note }]
-    })
+    act.goalUpdate(g.id, draft)
     setDraft(d => ({ ...d, note: '' }))
     onToggle()
   }
@@ -106,27 +102,27 @@ function GoalRow({ plan, g, update, open, onToggle }) {
         <div className="a-updated" style={{ ...mono, fontSize: 10, color: since == null || since > 7 ? C.warning : C.muted, whiteSpace: 'nowrap' }}>
           {since == null ? 'Never updated' : since === 0 ? 'Today' : `${since}d ago`}
         </div>
-        <div className="a-btn"><Btn kind={open ? 'ghost' : 'secondary'} small onClick={onToggle}>{open ? 'Close' : 'Update'}</Btn></div>
+        <div className="a-btn"><Btn kind={open ? 'ghost' : 'secondary'} small onClick={onToggle}>{open ? 'Close' : canUpdate ? 'Update' : 'View'}</Btn></div>
       </div>
 
       {open && (
         <div style={{ padding: '4px 20px 20px', background: C.paper, borderTop: `1px dashed ${C.line}` }}>
           <div className="pl-grid2" style={{ marginTop: 16 }}>
-            <div>
+            {canUpdate ? <div>
               <Field label="Status"><StatusPicker value={draft.status} onChange={s => setDraft(d => ({ ...d, status: s }))} /></Field>
               <Field label={`Latest value${g.measure ? ` (${g.measure})` : ''}`}><input value={draft.current} onChange={e => setDraft(d => ({ ...d, current: e.target.value }))} placeholder={`Target ${g.target || ''}`} /></Field>
               <Field label="What changed, and what's needed?" hint={draft.status === 'risk' || draft.status === 'off' ? 'Say what would get it back on track and what you need from others.' : null}>
                 <textarea rows={2} value={draft.note} onChange={e => setDraft(d => ({ ...d, note: e.target.value }))} />
               </Field>
               <Btn onClick={save}>Save update</Btn>
-            </div>
+            </div> : <div style={{ fontSize: 14, color: C.muted }}>Only {personName(plan, g.ownerId)} or an admin can update this goal.</div>}
             <div>
               {kids.length > 0 && <>
                 <Label>Team commitments</Label>
                 {kids.map(c => (
                   <label key={c.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '8px 0', borderBottom: `1px solid ${C.line}`, cursor: 'pointer' }}>
                     <input type="checkbox" style={{ width: 16, marginTop: 3 }} checked={c.status === 'done'}
-                      onChange={e => { const done = e.target.checked; update(p => { p.goals.find(x => x.id === c.id).status = done ? 'done' : 'new' }) }} />
+                      disabled={!act.canUpdate(c)} onChange={e => act.setCommitmentDone(c.id, e.target.checked)} />
                     <span style={{ fontSize: 13, color: c.status === 'done' ? C.muted : C.body, textDecoration: c.status === 'done' ? 'line-through' : 'none' }}>
                       {c.title || 'Untitled'} <span style={{ color: C.muted }}>· {personName(plan, c.ownerId)} · {fmtDate(c.due)}</span>
                     </span>
@@ -151,9 +147,9 @@ function GoalRow({ plan, g, update, open, onToggle }) {
 }
 
 // ─── 05 REVIEW ────────────────────────────────────────────────────────────────
-export function Review({ plan, update, go }) {
-  const [tab, setTab] = useState('checkin')
-  const tabs = [['checkin', 'Run a check-in'], ['actions', 'Actions & accountability'], ['history', 'History']]
+export function Review({ plan, update, go, act, readOnly }) {
+  const [tab, setTab] = useState(readOnly ? 'actions' : 'checkin')
+  const tabs = [...(readOnly ? [] : [['checkin', 'Run a check-in']]), ['actions', 'Actions & accountability'], ['history', 'History']]
 
   return <>
     <StageHeader stageId="review" tip="Keep the weekly check-in to 30 minutes and spend it on exceptions. Only at-risk and off-track goals get airtime, and each one ends in a decision or an action with an owner and a date." />
@@ -167,8 +163,8 @@ export function Review({ plan, update, go }) {
       ))}
     </div>
 
-    {tab === 'checkin' && <CheckIn plan={plan} update={update} go={go} onSaved={() => setTab('history')} />}
-    {tab === 'actions' && <Actions plan={plan} update={update} />}
+    {tab === 'checkin' && !readOnly && <CheckIn plan={plan} update={update} go={go} onSaved={() => setTab('history')} />}
+    {tab === 'actions' && <Actions plan={plan} act={act} />}
     {tab === 'history' && <History plan={plan} />}
 
     <NextBar onBack={() => go('track')} onNext={() => go('home')} nextLabel="Overview" />
@@ -312,7 +308,7 @@ function CheckIn({ plan, update, go, onSaved }) {
   </>
 }
 
-function Actions({ plan, update }) {
+function Actions({ plan, act }) {
   const [showDone, setShowDone] = useState(false)
   const list = plan.actions.filter(a => showDone || !a.done).sort((a, b) => (a.due || '9999').localeCompare(b.due || '9999'))
   const goalTitle = id => plan.goals.find(g => g.id === id)?.title
@@ -348,7 +344,7 @@ function Actions({ plan, update }) {
       {list.length === 0 && <div style={{ fontSize: 14, color: C.muted }}>No actions yet. They're created during check-ins.</div>}
       {list.map(a => (
         <label key={a.id} style={{ display: 'flex', gap: 12, alignItems: 'flex-start', padding: '10px 0', borderTop: `1px solid ${C.line}`, cursor: 'pointer' }}>
-          <input type="checkbox" style={{ width: 16, marginTop: 3 }} checked={a.done} onChange={e => { const done = e.target.checked; update(p => { p.actions.find(x => x.id === a.id).done = done }) }} />
+          <input type="checkbox" style={{ width: 16, marginTop: 3 }} checked={a.done} disabled={!act.canUpdate(a)} onChange={e => act.setActionDone(a.id, e.target.checked)} />
           <span style={{ fontSize: 14, color: a.done ? C.muted : C.body, textDecoration: a.done ? 'line-through' : 'none', lineHeight: 1.5 }}>
             {a.text}
             <span style={{ display: 'block', fontSize: 12, color: !a.done && a.due && a.due < today() ? C.error : C.muted, textDecoration: 'none' }}>

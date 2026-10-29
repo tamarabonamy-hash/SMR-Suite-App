@@ -198,3 +198,15 @@ export function NextBar({ onBack, onNext, nextLabel }) {
     </div>
   )
 }
+
+// Members see the build stages but can't change them; a disabled fieldset
+// switches off every input and button inside in one go.
+export function Guard({ readOnly, children }) {
+  if (!readOnly) return children
+  return (
+    <fieldset disabled style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+      <div style={{ fontSize: 13, color: C.muted, marginBottom: 16 }}>View only. Your company's owner or admin edits this step.</div>
+      {children}
+    </fieldset>
+  )
+}
